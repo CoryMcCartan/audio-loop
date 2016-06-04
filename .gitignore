@@ -1,0 +1,5 @@
+_site
+*.tmp
+*.swp
+*.bak
+.DS_Store

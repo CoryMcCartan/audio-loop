@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Looping</title>
+
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,500,700,300">
+    <link rel="stylesheet" href="https://code.getmdl.io/1.1.3/material.green-indigo.min.css">
+    <script defer src="https://code.getmdl.io/1.1.3/material.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="css/main.css">
+</head>
+<body>
+    <header>Looping</header>
+
+    <main>
+        <section class="tracks">
+            <div class="loop-track" 
+                v-for="track in tracks"
+                @dblclick="muteTrack($index)">
+                <div class="info">
+                    <span class="track-id">{{ 1 + $index }}</span>
+                    <span class="controls">
+                        <label class="mdl-tooltip" for="mute-track-{{$index}}">
+                            Mute Track {{ $index < 10 ? '(' + ($index + 1)+ ')' : '' }}
+                        </label>
+                        <button @click="muteTrack($index)" id="mute-track-{{$index}}"
+                            class="mdl-button mdl-js-button mdl-button--icon">
+                            <i class="material-icons">
+                                {{ track.muted ? 'volume_off' : 'volume_up' }}
+                            </i>
+                        </button>
+
+                        <label class="mdl-tooltip" for="delete-track-{{$index}}">Delete Track</label>
+                        <button @click="deleteTrack($index)" id="delete-track-{{$index}}"
+                            class="mdl-button mdl-js-button mdl-button--icon">
+                            <i class="material-icons">delete</i>
+                        </button>
+                    </span>
+                </div>
+                <div class="track">
+                    <div :class="track.muted ? 'muted' : ''"
+                        :style="{width: trackWidth(track.length)}"></div>
+                </div>
+            </div>
+
+            <div id="cursor"
+                 :style="{left: trackWidth(currentTime)}"></div>
+        </section>
+
+        <section class="main-controls">
+            <!--
+            <label class="mdl-tooltip mdl-tooltip--top" for="delay">Delay (d)</label>
+            <button id="delay"
+                @click="delay = (delay + 1) % 5"
+                class="mdl-button mdl-js-button mdl-button--fab mdl-button--mini-fab">
+                <i class="material-icons">
+                    {{ delay === 0 ? 'exposure_zero' :
+                       delay === 1 ? 'looks_one' :
+                       delay === 2 ? 'looks_two' :
+                       delay === 3 ? 'looks_3' : 'looks_4' }}
+                </i>
+            </button>
+            -->
+
+            <label class="mdl-tooltip mdl-tooltip--top" for="quantize">Quantize (q)</label>
+            <button id="quantize"
+                @click="quantize = !quantize"
+                :class="quantize ? 'mdl-button--colored' : ''"
+                class="mdl-button mdl-js-button mdl-button--fab mdl-button--mini-fab">
+                <i class="material-icons">more_horiz</i>
+            </button>
+
+            <label class="mdl-tooltip mdl-tooltip--top" for="pp">
+                {{ playing ? 'Pause' : 'Play' }} (p)
+            </label>
+            <button id="pp"
+                @click="playing ? pause() : play()"
+                class="mdl-button mdl-js-button mdl-button--fab">
+                <i class="material-icons">{{ playing ? 'pause' : 'play_arrow' }}</i>
+            </button>
+
+            <label class="mdl-tooltip mdl-tooltip--top" for="record">
+                {{ recording ? 'Stop' : 'Record' }} (space)
+            </label>
+            <button id="record"
+                @click="recording ? stop() : record()"
+                class="mdl-button mdl-js-button mdl-button--fab mdl-button--colored mdl-js-ripple-effect">
+                <i class="material-icons">
+                    {{ recording ? 'stop' : 'fiber_manual_record' }}</i>
+            </button>
+
+            <label class="mdl-tooltip mdl-tooltip--top" for="tap-tempo">
+                {{ tempo ? tempo.toFixed(0) : '' }} (t)
+            </label>
+            <button id="tap-tempo"
+                @click="tap"
+                class="mdl-button mdl-js-button mdl-button--fab text-button">
+                TAP TEMPO
+            </button>
+
+            <label class="mdl-tooltip mdl-tooltip--top" for="metronome">Play Metronome (m)</label>
+            <button id="metronome"
+                @click="playMetronome = !playMetronome"
+                :class="playMetronome ? 'mdl-button--colored' : ''"
+                class="mdl-button mdl-js-button mdl-button--fab mdl-button--mini-fab">
+                <i class="material-icons">audiotrack</i>
+            </button>
+
+        </section>
+    </main>
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/1.0.24/vue.min.js"></script>
+    <script src="http://corymccartan.github.io/jslib/lib.min.js"></script>
+    <script src="js/tock.js" type="text/javascript" charset="utf-8"></script>
+    <script src="js/mousetrap.min.js" type="text/javascript" charset="utf-8"></script>
+    <script src="js/main.js" type="text/javascript" charset="utf-8"></script>
+</body>
+</html>

@@ -1,0 +1,108 @@
+---
+---
+
+$font-stack: 'Roboto', 'Helvetica Nueue', sans-serif
+
+$main-300: #AED581
+$main-500: #8BC34A
+$main-700: #689F38
+$lightgrey: #888
+$darkgrey: #333
+$offwhite: #eee
+$grey: #666
+
+@mixin shadow($radius, $opacity)
+    box-shadow: 0 0 $radius rgba(0, 0, 0, $opacity)
+
+    
+
+body
+    font-family: $font-stack
+    background-color: $darkgrey
+    color: $offwhite
+    margin: 0
+    padding: 1em 1em 0 1em 
+    box-sizing: border-box
+
+header
+    display: block
+    margin-bottom: 0.5em
+    font-weight: bold
+    text-transform: uppercase
+    color: $lightgrey
+
+main
+    opacity: 0
+    transition: opacity 500ms
+    min-height: 90vh
+    width: calc(100vw - 2em)
+
+.tracks
+    display: flex
+    width: 100%
+    max-height: 75vh
+    flex-direction: column
+
+.cursor
+    display: content
+    height: 100%
+
+.loop-track
+    width: 100%
+    display: flex
+    flex-basis: 7em
+    margin: 0 0 1em
+
+    .info
+        display: flex
+        flex-wrap: wrap
+        flex-direction: column
+        justify-content: space-between
+        min-width: 80px
+        padding: 0.5em
+        margin-right: 0.5em
+        border-radius: 4px 0 0 4px
+        background-color: $grey
+
+        .track-id
+            font-weight: bold
+            font-size: 250%
+            width: 0.8em
+            line-height: 1em
+
+        .controls
+            padding-right: 1.8em
+            opacity: 0.8
+
+            button
+                cursor: pointer
+                margin-right: -2px
+
+    .track
+        display: flex
+        flex-grow: 1
+
+        div
+            transition: background-color 100ms
+            background-color: $main-500
+            border-radius: 0 4px 4px 0
+
+        div.muted
+            background-color: $grey
+
+.main-controls
+    display: flex
+    width: 80%
+    margin: 0 10%
+    position: absolute
+    bottom: 1em
+
+    button
+        color: $offwhite
+
+
+.spacer
+    flex-grow: 1
+
+.text-button
+    font-size: 80%
