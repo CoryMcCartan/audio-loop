@@ -275,3 +275,11 @@ function main() {
         $("main").style.opacity = 1.0;
     });
 }
+
+if (navigator.serviceWorker) {
+    navigator.serviceWorker.register("service-worker.js", {
+        scope: location.pathname.replace("index.html", "")
+    }).then(() => {
+        console.log("Service Worker Registered.");
+    })
+}
