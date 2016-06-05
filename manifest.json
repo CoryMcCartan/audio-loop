@@ -1,0 +1,9 @@
+{
+    "short_name": "Looper",
+    "name": "Audio Looper",
+    "lang": "en-US",
+    "display": "standalone",
+    "icons": [ ],
+    "background_color": "#8BC34A",
+    "theme_color": "#8BC34A"
+}
