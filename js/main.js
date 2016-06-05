@@ -7,153 +7,247 @@
 "use strict";
 
 function main() {
-    let timeoutID;
+    let hasStartedMetronome = false;
 
     window.vm = new Vue({
-        el: "main",
+    el: "main",
 
-        data: {
-            quantize: true,
-            playMetronome: true,
-            maxTime: 20.0 * 1e3,
-            playing: false,
-            recording: false,
-            delay: 0,
-            active: -1,
-            base: null,
-            tempo: null,
-            startTime: 0,
+    data: {
+        quantize: true,
+        playMetronome: false,
+        maxTime: 20.0 * 1e3,
+        playing: false,
+        recording: false,
+        delay: 0,
+        currentTime: 0,
+        base: null,
+        tempo: null,
+        tapColor: false,
 
-            tracks: [],
-        },
+        tracks: [],
+    },
 
-        computed: {
-            currentTime: function() {
-                if (!this.startTime) return 0;
-                else return performance.now() - this.startTime;
-            },
-        },
+    methods: {
+        nextQuantization: function(callback) {
+            if (!this.quantize || !this.base) return callback.call(this); 
 
-        methods: {
-            nextQuantization: function(callback) {
-                if (!this.quantize || !this.base 
-                    || (!this.tempo && (!this.tracks[0] || !this.tracks[0].end))) 
-                    return callback.call(this); // not enough info for quantization
+            let firstTrack = this.tracks[0];
 
-                let difference = Date.now() - this.base; 
-                let quantization = this.tempo ? 
-                        (60 / this.tempo) * 1000 :  // nearest beat
-                        this.tracks[0].length; // or length of first loop
+            if (this.tempo) {
+                let quantization = (60 / this.tempo) * 1000;  // nearest beat
+                let difference = performance.now() - this.base; 
 
-                // if there's a tempo and a completed first track
-                if (this.tempo && this.tracks[0] && this.tracks[0].end) {
-                    let beatsPerTrack = this.tracks[0].length / quantization;
+                if (firstTrack && firstTrack.end) {
+                    let beatsPerTrack = firstTrack.length / quantization;
                     quantization *= Math.round(beatsPerTrack);
                 }
 
-                let steps = (difference / quantization) % 1; // frac part
-                let time = quantization * (1 - steps); // ms until next point
-                if (callback) {
-                    timeoutID = setTimeout(callback, time);
+                let frac = (difference / quantization) % 1; // frac part
+                let time = quantization * (1 - frac); // ms until next point
+
+                new Tock({
+                    countdown: true,
+                    complete: callback,
+                }).start(time);
+            } else {
+                if (!firstTrack && !firstTrack.end) 
+                    return callback.call(this);
+
+                let difference = firstTrack.length - firstTrack.time;
+                new Tock({
+                    countdown: true,
+                    complete: callback,
+                }).start(difference);
+            }
+        },
+        trackWidth: function(length) {
+            if (length > this.maxTime) 
+                this.maxTime = 1.25 * length;
+            return 100 * length / this.maxTime + "%";   
+        },
+        deleteTrack: function(index) {
+            if (!this.tracks[index].muted) this.tracks[index].audio.mute();
+            this.tracks.splice(index, 1);
+            if (this.tracks.length === 0) this.currentTime = 0;
+        },
+        toggleMetronome: function() {
+            this.playMetronome = !this.playMetronome;
+            if (this.playMetronome && this.playing) {
+                if (!hasStartedMetronome) audio.metronome.setTempo(this.tempo);
+                audio.metronome.start();
+                this.base = performance.now();
+                hasStartedMetronome = true;
+            } else if (!this.playMetronome && this.playing) {
+                audio.metronome.stop();
+            }
+        },
+        pause: function() {
+            this.playing = false; 
+            if (this.recording) this.stop();
+
+            if (this.playMetronome && this.tempo) {
+                audio.metronome.stop();
+                hasStartedMetronome = false;
+            }
+
+            for (let track of this.tracks)
+                if (!track.muted) track.audio.mute();
+        },
+        play: function() {
+            // TODO check delay
+            this.playing = true; 
+            let startTime = performance.now();
+
+            if (!this.base) this.base = startTime;
+            if (this.playMetronome) this.base += 100;
+
+            for (let track of this.tracks) {
+                if (!track.end) continue;
+                track.time = 0;
+                track.audio.restart();
+            }
+
+            let updateTime = () => {
+                if (this.playing) requestAnimationFrame(updateTime)
+                if (this.tracks.length === 0) return;
+
+                let now = performance.now();
+                this.currentTime = now - startTime;
+                let newUnit = false;
+                let unitLength = this.tracks[0].length;
+
+                if (this.currentTime > unitLength) {
+                    this.currentTime = 0;
+                    startTime = now;
+                    newUnit = true;
                 }
-                
 
-                return time;
-            },
-            trackWidth: function(length) {
-                if (length > this.maxTime) 
-                    this.maxTime = 1.25 * length;
-                return 100 * length / this.maxTime + "%";   
-            },
-            deleteTrack: function(index) {
-                this.tracks.splice(index, 1);
-            },
-            pause: function() {
-                // TODO check quantization
-
-                this.playing = false; 
-                if (this.recording) this.stop();
-                // TODO stop all audio
-            },
-            play: function() {
-                // TODO check delay
-                this.playing = true; 
-                // TODO start met if needed
-            },
-            record: function() {
-                // show blank track
-                let index = this.tracks.push({
-                    start: 0,
-                    length: 0,
-                    muted: false,
-                }) - 1;
-
-                this.nextQuantization(() => {
-                    this.recording = true;
-                    if (!this.playing) this.play();
-
-                    if (this.tracks.length === 1) this.base = Date.now(); 
-                    this.tracks[index].start = Date.now();
-
-                    // update length
-                    let updateLength = () => {
-                        let track = this.tracks[index];
-                        track.length = Date.now() - track.start;
-                        if (!track.end)
-                            requestAnimationFrame(updateLength);
-                    };
-                    requestAnimationFrame(updateLength);
-
-                    // TODO check delay
-                    if (this.delay) {
-                        let step = 1000;
-                        if (this.tempo) step = 1000 * (60 / tempo);
-
-                        setTimeout(function() {
-                             
-                        }, step * this.delay);
+                for (let track of this.tracks) {
+                    if (!track.end) { // cursor just follows current time
+                        track.time = track.length;
+                    } else { // cursor synced
+                        if (newUnit) {
+                            track.currentUnit++;
+                            if (track.currentUnit >= track.units) {
+                                track.currentUnit = 0;
+                                track.audio.restart();
+                            }
+                        }
+                        track.time = track.currentUnit * unitLength + this.currentTime;
                     }
-                    
-                    // TODO add audio element and start recording
-                });
-            },
-            stop: function(immediate) {
-                this.nextQuantization(() => {
-                    this.recording = false;
-                    let track = this.tracks[this.tracks.length - 1];
-                    track.end = Date.now();
-                    track.length = track.end - track.start;
+                }
+            }
+            requestAnimationFrame(updateTime);
+
+            if (this.playMetronome && this.tempo) {
+                audio.metronome.setTempo(this.tempo);
+                audio.metronome.start();
+                hasStartedMetronome = true;
+            }
+
+            for (let track of this.tracks)
+                if (!track.muted && track.audio) track.audio.unmute();
+        },
+        record: function(oneUnitOnly) {
+            // show blank track
+            let index = this.tracks.push({
+                start: 0,
+                length: 0,
+                time: 0,
+                currentUnit: 0,
+                units: 1,
+                muted: false,
+            }) - 1;
+
+            this.nextQuantization(() => {
+                this.recording = true;
+                if (!this.playing) this.play();
+
+                if (this.tracks.length === 1) this.base = performance.now(); 
+
+                let track = this.tracks[index];
+                track.start = performance.now();
+
+                // update length
+                let updateLength = () => {
+                    if (track.end) return; // if done
+
+                    track.length = performance.now() - track.start;
+
+                    requestAnimationFrame(updateLength);
+                };
+                requestAnimationFrame(updateLength);
+
+                let currentTime;
+                if (this.tracks[0].end)
+                    currentTime = this.tracks[0].audio.mediaElement.currentTime;
+                else
+                    currentTime = 0;
+
+                audio.record(currentTime);
+
+                if (oneUnitOnly && this.quantize && this.tracks[0].end) {
+                    setTimeout(this.stop.bind(this), this.tracks[0].length / 2); 
+                }
+            });
+        },
+        stop: function(immediate) {
+            this.nextQuantization(() => {
+                this.recording = false;
+                let index = this.tracks.length - 1;
+                let track = this.tracks[index];
+
+                track.end = performance.now();
+                track.length = track.end - track.start;
+
+
+                let base = this.tracks[0].length;
+                track.units = track.length / base;
+                if (this.quantize) track.units = Math.round(track.units);
+                track.length = track.units * base;
+
+                audio.stop(index, source => {
+                    track.audio = source;
+                    track.audio.mediaElement.currentTime += 0.01;
 
                     if (immediate) {
                         this.quantize = false;
                         this.record();
                         this.quantize = true;
                     }
-
-                    // TODO stop recording audio
                 });
-            },
-            tap: function() {
-                this.tempo = tempoFinder.tap();
-                this.base = Date.now(); 
-                console.log(this.tempo);
-            },
-            muteTrack: function(index) {
-                // TODO check quantization
+            });
+        },
+        tap: function() {
+            if (this.playing) return;
+            if (!this.tempo) this.playMetronome = true;
+            this.tempo = tempoFinder.tap();
+            this.base = performance.now(); 
+            console.log(this.tempo);
 
-                if (this.tracks.length > index)
-                    this.tracks[index].muted = !this.tracks[index].muted;
-            },
-        }
+            this.tapColor = true;
+            setTimeout(() => this.tapColor = false, 100);
+        },
+        muteTrack: function(index) {
+            if (this.tracks.length <= index) return;
+
+            let track = this.tracks[index];
+            track.muted = !track.muted;
+            if (track.muted)
+                track.audio.mute();
+            else
+                track.audio.unmute();
+        },
+    }
     });
 
     Mousetrap.bind("space", () => vm.recording ? vm.stop() : vm.record());
-    Mousetrap.bind("shift+space", () => vm.recording ? vm.stop(true) : vm.record());
+    Mousetrap.bind("shift+space", () => vm.recording ? vm.stop(true) : vm.record(true));
     Mousetrap.bind("p", () => vm.playing ? vm.pause() : vm.play());
     Mousetrap.bind("t", vm.tap);
     Mousetrap.bind("d", () => vm.delay = (vm.delay + 1) % 5);
     Mousetrap.bind("q", () => vm.quantize = !vm.quantize);
-    Mousetrap.bind("m", () => vm.playMetronome = !vm.playMetronome);
+    Mousetrap.bind("m", vm.toggleMetronome);
     Mousetrap.bind("1", vm.muteTrack.bind(vm, 0));
     Mousetrap.bind("2", vm.muteTrack.bind(vm, 1));
     Mousetrap.bind("3", vm.muteTrack.bind(vm, 2));
@@ -175,14 +269,9 @@ function main() {
     Mousetrap.bind("x 9", vm.deleteTrack.bind(vm, 8));
     Mousetrap.bind("x 0", vm.deleteTrack.bind(vm, 9));
 
-    $("main").style.opacity = 1.0;
-}
-
-function createComponent(name, obj) {
-    let content = $("template#tmp-" + name).content;
-
-    obj.data = () => obj.data;
-    obj.template = content;
-
-    return Vue.component(name, obj);
+    audio.initMet()
+    .then(audio.initRecord())
+    .then(() => {
+        $("main").style.opacity = 1.0;
+    });
 }

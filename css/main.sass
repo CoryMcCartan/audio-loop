@@ -44,8 +44,13 @@ main
     flex-direction: column
 
 .cursor
-    display: content
-    height: 100%
+    position: absolute
+    top: -0.7em
+    margin-left: -2px
+    width: 4px
+    border-radius: 2px
+    background-color: white
+    height: calc(100% + 1.4em)
 
 .loop-track
     width: 100%
@@ -79,15 +84,16 @@ main
                 margin-right: -2px
 
     .track
+        position: relative
         display: flex
         flex-grow: 1
 
-        div
+        .bar
             transition: background-color 100ms
             background-color: $main-500
             border-radius: 0 4px 4px 0
 
-        div.muted
+        .bar.muted
             background-color: $grey
 
 .main-controls

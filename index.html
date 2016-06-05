@@ -40,13 +40,12 @@
                     </span>
                 </div>
                 <div class="track">
-                    <div :class="track.muted ? 'muted' : ''"
+                    <div class="bar" :class="track.muted ? 'muted' : ''"
                         :style="{width: trackWidth(track.length)}"></div>
+                    <div class="cursor" :style="{left: trackWidth(track.time)}"></div>
                 </div>
             </div>
 
-            <div id="cursor"
-                 :style="{left: trackWidth(currentTime)}"></div>
         </section>
 
         <section class="main-controls">
@@ -54,6 +53,7 @@
             <label class="mdl-tooltip mdl-tooltip--top" for="delay">Delay (d)</label>
             <button id="delay"
                 @click="delay = (delay + 1) % 5"
+                :disabled="!this.tempo"
                 class="mdl-button mdl-js-button mdl-button--fab mdl-button--mini-fab">
                 <i class="material-icons">
                     {{ delay === 0 ? 'exposure_zero' :
@@ -95,14 +95,15 @@
                 {{ tempo ? tempo.toFixed(0) : '' }} (t)
             </label>
             <button id="tap-tempo"
-                @click="tap"
+                @click="tap" :disabled="playing"
+                :class="tapColor ? 'mdl-button--colored' : ''"
                 class="mdl-button mdl-js-button mdl-button--fab text-button">
                 TAP TEMPO
             </button>
 
             <label class="mdl-tooltip mdl-tooltip--top" for="metronome">Play Metronome (m)</label>
             <button id="metronome"
-                @click="playMetronome = !playMetronome"
+                @click="toggleMetronome()"
                 :class="playMetronome ? 'mdl-button--colored' : ''"
                 class="mdl-button mdl-js-button mdl-button--fab mdl-button--mini-fab">
                 <i class="material-icons">audiotrack</i>
@@ -116,6 +117,7 @@
     <script src="http://corymccartan.github.io/jslib/lib.min.js"></script>
     <script src="js/tock.js" type="text/javascript" charset="utf-8"></script>
     <script src="js/mousetrap.min.js" type="text/javascript" charset="utf-8"></script>
+    <script src="js/audio.js" type="text/javascript" charset="utf-8"></script>
     <script src="js/main.js" type="text/javascript" charset="utf-8"></script>
 </body>
 </html>
