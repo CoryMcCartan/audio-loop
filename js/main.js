@@ -24,9 +24,6 @@ function main() {
         hasStartedMetronome: false,
 
         tracks: [],
-
-        downloadDialog: $("dialog#download"),
-        downloadPrefix: "track",
     },
 
     methods: {
