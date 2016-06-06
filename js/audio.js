@@ -17,7 +17,7 @@ window.audio = (function() {
     let chunks = [];
     let callback;
     let startTime;
-    let index;
+    let stopTime;
 
     let initMet = function() {
         return new Promise((resolve, reject) => {
@@ -60,6 +60,7 @@ window.audio = (function() {
         return new Promise((resolve, reject) => {
             navigator.mediaDevices.getUserMedia({audio: true}).then(stream => {
                 recorder = new MediaRecorder(stream);
+                recorder.onstart = onstart;
                 recorder.onstop = finish;
                 recorder.ondataavailable = e => chunks.push(e.data);
                 resolve();
@@ -67,20 +68,25 @@ window.audio = (function() {
         });
     };
 
-    let record = function(currentTime) {
+    let record = function(start, CT) {
+        startTime = start;
         chunks = [];
         recorder.start();
-        startTime = currentTime;
+    };
+    let onstart = function() {
+        console.log('record delay: ' + (performance.now() - startTime).toFixed(3));
     };
 
-    let stop = function(i, _callback) {
+    let stop = function(stop, _callback) {
+        stopTime = stop;
         recorder.stop();
         callback = _callback;
-        index = i;
     };
 
     let finish = function() {
         let audio = document.createElement("audio");
+
+        console.log('stop delay: ' + (performance.now() - stopTime));
 
         let blob = new Blob(chunks, {type: "audio/opus; codecs=opus"});
         let dataURL = URL.createObjectURL(blob);
@@ -95,11 +101,9 @@ window.audio = (function() {
         source.unmute = function() {
             audio.muted = false;
         };
-        source.restart = function() {
-            setTimeout(function() {
-                audio.currentTime = 0;
-                audio.play();
-            }, 100 * index)
+        source.restart = function(time = 0) {
+            audio.currentTime = time;
+            audio.play();
         };
         
 

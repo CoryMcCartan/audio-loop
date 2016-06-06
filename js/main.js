@@ -27,7 +27,7 @@ function main() {
     },
 
     methods: {
-        nextQuantization: function(callback) {
+        nextQuantization(delay, callback) {
             if (!this.quantize || !this.base) return callback.call(this); 
 
             let firstTrack = this.tracks[0];
@@ -47,29 +47,28 @@ function main() {
                 new Tock({
                     countdown: true,
                     complete: callback,
-                }).start(time);
+                }).start(time + delay);
             } else {
                 if (!firstTrack && !firstTrack.end) 
                     return callback.call(this);
 
                 let difference = firstTrack.length - firstTrack.time;
-                new Tock({
-                    countdown: true,
+                new Tock({ countdown: true,
                     complete: callback,
-                }).start(difference);
+                }).start(difference + delay);
             }
         },
-        trackWidth: function(length) {
+        trackWidth(length) {
             if (length > this.maxTime) 
                 this.maxTime = 1.25 * length;
             return 100 * length / this.maxTime + "%";   
         },
-        deleteTrack: function(index) {
+        deleteTrack(index) {
             if (!this.tracks[index].muted) this.tracks[index].audio.mute();
             this.tracks.splice(index, 1);
             if (this.tracks.length === 0) this.currentTime = 0;
         },
-        toggleMetronome: function() {
+        toggleMetronome() {
             this.playMetronome = !this.playMetronome;
             if (this.playMetronome && this.playing) {
                 if (!this.hasStartedMetronome) audio.metronome.setTempo(this.tempo);
@@ -80,7 +79,7 @@ function main() {
                 audio.metronome.stop();
             }
         },
-        pause: function() {
+        pause() {
             this.playing = false; 
             if (this.recording) this.stop();
 
@@ -92,13 +91,12 @@ function main() {
             for (let track of this.tracks)
                 if (!track.muted) track.audio.mute();
         },
-        play: function() {
-            // TODO check delay
+        play(delay = 0) {
             this.playing = true; 
-            let startTime = performance.now();
+            let startTime = performance.now() + delay;
 
             if (!this.base) this.base = startTime;
-            if (this.playMetronome) this.base += 100;
+            if (this.playMetronome) this.base += 1; // 1ms delay on met
 
             for (let track of this.tracks) {
                 if (!track.end) continue;
@@ -106,14 +104,16 @@ function main() {
                 track.audio.restart();
             }
 
+            let i = 0;
             let updateTime = () => {
-                if (this.playing) requestAnimationFrame(updateTime)
+                if (this.playing) requestAnimationFrame(updateTime);
                 if (this.tracks.length === 0) return;
 
                 let now = performance.now();
                 this.currentTime = now - startTime;
+                let firstTrack = this.tracks[0];
                 let newUnit = false;
-                let unitLength = this.tracks[0].length;
+                let unitLength = firstTrack.end ? firstTrack.length : Infinity;
 
                 if (this.currentTime > unitLength) {
                     this.currentTime = 0;
@@ -123,13 +123,19 @@ function main() {
 
                 for (let track of this.tracks) {
                     if (!track.end) { // cursor just follows current time
-                        track.time = track.length;
+                        if (!track.start) {
+                            track.time = 0;
+                        } else {
+                            track.time = track.length = performance.now() - track.start;
+                            track.delay = (this.currentTime - track.time) % unitLength;
+                        }
                     } else { // cursor synced
                         if (newUnit) {
                             track.currentUnit++;
                             if (track.currentUnit >= track.units) {
                                 track.currentUnit = 0;
-                                track.audio.restart();
+                                console.log(track.delay);
+                                track.audio.restart(-track.delay / 1000);
                             }
                         }
                         track.time = track.currentUnit * unitLength + this.currentTime;
@@ -147,7 +153,7 @@ function main() {
             for (let track of this.tracks)
                 if (!track.muted && track.audio) track.audio.unmute();
         },
-        record: function(oneUnitOnly) {
+        record(oneUnitOnly) {
             // show blank track
             let index = this.tracks.push({
                 start: 0,
@@ -156,26 +162,20 @@ function main() {
                 currentUnit: 0,
                 units: 1,
                 muted: false,
+                delay: 0,
             }) - 1;
 
-            this.nextQuantization(() => {
-                this.recording = true;
-                if (!this.playing) this.play();
+            let delay = this.getRecordDelay(index);
 
-                if (this.tracks.length === 1) this.base = performance.now(); 
+            this.nextQuantization(-delay, () => {
+                this.recording = true;
+                if (!this.playing) this.play(-delay);
+
+                let now = performance.now() + delay;
+                if (this.tracks.length === 1) this.base = now; 
 
                 let track = this.tracks[index];
-                track.start = performance.now();
-
-                // update length
-                let updateLength = () => {
-                    if (track.end) return; // if done
-
-                    track.length = performance.now() - track.start;
-
-                    requestAnimationFrame(updateLength);
-                };
-                requestAnimationFrame(updateLength);
+                track.start = now;
 
                 let currentTime;
                 if (this.tracks[0].end)
@@ -183,31 +183,34 @@ function main() {
                 else
                     currentTime = 0;
 
-                audio.record(currentTime);
+                audio.record(track.start, this.currentTime);
 
                 if (oneUnitOnly && this.quantize && this.tracks[0].end) {
                     setTimeout(this.stop.bind(this), this.tracks[0].length / 2); 
                 }
             });
         },
-        stop: function(immediate) {
-            this.nextQuantization(() => {
+        stop(immediate) {
+            let delay = 1.3;
+            this.nextQuantization(-delay, () => { // 1.5ms stop delay
                 this.recording = false;
                 let index = this.tracks.length - 1;
                 let track = this.tracks[index];
 
-                track.end = performance.now();
+                track.end = performance.now() + delay;
                 track.length = track.end - track.start;
-
+                let l1 = track.length;
 
                 let base = this.tracks[0].length;
                 track.units = track.length / base;
                 if (this.quantize) track.units = Math.round(track.units);
                 track.length = track.units * base;
+                let l2 = track.length;
 
-                audio.stop(index, source => {
+                audio.stop(track.end, source => {
                     Vue.set(track, "audio", source);
-                    track.audio.mediaElement.currentTime += 0.01;
+
+                    console.log(`l1: ${l1}\tl2:${l2}`);
 
                     if (immediate) {
                         this.quantize = false;
@@ -217,7 +220,20 @@ function main() {
                 });
             });
         },
-        tap: function() {
+        getRecordDelay(index) {
+            if (index === 0) {
+                if (this.tempo)
+                    return 1.5;
+                else
+                    return 10;
+            } else {
+                if (this.quantize)
+                    return 0.3;
+                else
+                    return 2.5;
+            }
+        },
+        tap() {
             if (this.playing) return;
             if (!this.tempo) this.playMetronome = true;
             this.tempo = tempoFinder.tap();
@@ -227,7 +243,7 @@ function main() {
             this.tapColor = true;
             setTimeout(() => this.tapColor = false, 100);
         },
-        muteTrack: function(index) {
+        muteTrack(index) {
             if (this.tracks.length <= index) return;
 
             let track = this.tracks[index];
@@ -237,7 +253,7 @@ function main() {
             else
                 track.audio.unmute();
         },
-        download: function() {
+        download() {
             let zip = new JSZip();
             let n = this.tracks.length
             for (let i = 0; i < n; i++) {
