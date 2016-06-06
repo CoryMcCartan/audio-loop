@@ -22,6 +22,8 @@ function main() {
         tempo: null,
         tapColor: false,
         hasStartedMetronome: false,
+        hasPressedRecord: false,
+        hasPressedStop: false,
 
         tracks: [],
     },
@@ -66,7 +68,7 @@ function main() {
         deleteTrack(index) {
             if (!this.tracks[index].muted) this.tracks[index].audio.mute();
             this.tracks.splice(index, 1);
-            if (this.tracks.length === 0) this.currentTime = 0;
+            if (this.tracks.length === 0) this.pause();
         },
         toggleMetronome() {
             this.playMetronome = !this.playMetronome;
@@ -154,6 +156,8 @@ function main() {
                 if (!track.muted && track.audio) track.audio.unmute();
         },
         record(oneUnitOnly) {
+            if (this.hasPressedRecord) return;
+            this.hasPressedRecord = true;
             // show blank track
             let index = this.tracks.push({
                 start: 0,
@@ -191,9 +195,15 @@ function main() {
             });
         },
         stop(immediate) {
+            if (this.hasPressedStop) return;
+            this.hasPressedStop = true;
+            this.hasPressedRecord = false;
             let delay = 1.3;
+
             this.nextQuantization(-delay, () => { // 1.5ms stop delay
+                this.hasPressedStop = false;
                 this.recording = false;
+
                 let index = this.tracks.length - 1;
                 let track = this.tracks[index];
 

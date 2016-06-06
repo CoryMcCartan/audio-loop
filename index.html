@@ -113,6 +113,7 @@
             <label class="mdl-tooltip mdl-tooltip--top" for="download">Download</label>
             <button id="download"
                 @click="download()"
+                :disabled="!this.tracks.length"
                 class="mdl-button mdl-js-button mdl-button--fab mdl-button--mini-fab">
                 <i class="material-icons">file_download</i>
             </button>
