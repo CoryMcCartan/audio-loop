@@ -82,7 +82,7 @@ window.audio = (function() {
     let finish = function() {
         let audio = document.createElement("audio");
 
-        let blob = new Blob(chunks, {type: "audio/ogg; codecs=opus"});
+        let blob = new Blob(chunks, {type: "audio/opus; codecs=opus"});
         let dataURL = URL.createObjectURL(blob);
         audio.src = dataURL;
 
@@ -103,6 +103,7 @@ window.audio = (function() {
         };
         
 
+        source.blob = blob;
         source.connect(context.destination);
         source.unmute();
         source.restart();

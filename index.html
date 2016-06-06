@@ -110,13 +110,50 @@
                 <i class="material-icons">audiotrack</i>
             </button>
 
+            <label class="mdl-tooltip mdl-tooltip--top" for="download">Download</label>
+            <button id="download"
+                @click="download()"
+                class="mdl-button mdl-js-button mdl-button--fab mdl-button--mini-fab">
+                <i class="material-icons">file_download</i>
+            </button>
+
         </section>
+
+
+        <dialog class="mdl-dialog" id="download">
+            <h4 class="mdl-dialog__title">Download Audio</h4>
+            <div class="mdl-dialog__content">
+                <form action="#">
+                    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                        <input v-model="downloadPrefix" class="mdl-textfield__input" 
+                            type="text" id="prefix">
+                        <label class="mdl-textfield__label" for="prefix">
+                            File Name Prefix
+                        </label>
+                    </div>
+                </form>
+
+                <div v-for="track in tracks">
+                    <a :download="downloadPrefix + '-' + $index + '.opus'"
+                       :href="track.audio.mediaElement.src">
+                        Track {{ $index }}
+                        {{ "audio" in track ? "yes" : "no" }}
+                    </a>
+                </div>
+            </div>
+            <div class="mdl-dialog__actions">
+                <button type="button" 
+                    @click="downloadDialog.close()"
+                    class="mdl-button">Close</button>
+            </div>
+        </dialog>
     </main>
 
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/1.0.24/vue.min.js"></script>
     <script src="https://corymccartan.github.io/jslib/lib.min.js"></script>
     <script src="js/tock.js" type="text/javascript" charset="utf-8"></script>
+    <script src="js/jszip.min.js" type="text/javascript" charset="utf-8"></script>
     <script src="js/mousetrap.min.js" type="text/javascript" charset="utf-8"></script>
     <script src="js/audio.js" type="text/javascript" charset="utf-8"></script>
     <script src="js/main.js" type="text/javascript" charset="utf-8"></script>

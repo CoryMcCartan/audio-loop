@@ -42,8 +42,8 @@ this.addEventListener("fetch", function(e) {
     var has = function(arr, test) {
         var length = arr.length;
         for (var i = 0; i < length; i++) {
-           if (arr[i].includes(test) || 
-                   (arr[i].includes(test.slice(1))  && test !== "/") )
+           if (arr[i] === test || 
+                   (arr[i] === test.slice(1)  && test !== "/") )
                return true; 
         }
         return false;
@@ -57,6 +57,10 @@ this.addEventListener("fetch", function(e) {
         if (log) console.log("DYNAMIC: " + url.pathname);
         e.respondWith(
             fetch(e.request)
+            .then(function(response) {
+                if (log) console.log("FETCHED SUCCESSFULLY: " + url.pathname);
+                return response;
+            })
             .catch(function(r) {
                 return caches.match(e.request);
             })

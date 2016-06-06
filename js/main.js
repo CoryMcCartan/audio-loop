@@ -7,8 +7,6 @@
 "use strict";
 
 function main() {
-    let hasStartedMetronome = false;
-
     window.vm = new Vue({
     el: "main",
 
@@ -23,8 +21,12 @@ function main() {
         base: null,
         tempo: null,
         tapColor: false,
+        hasStartedMetronome: false,
 
         tracks: [],
+
+        downloadDialog: $("dialog#download"),
+        downloadPrefix: "track",
     },
 
     methods: {
@@ -73,10 +75,10 @@ function main() {
         toggleMetronome: function() {
             this.playMetronome = !this.playMetronome;
             if (this.playMetronome && this.playing) {
-                if (!hasStartedMetronome) audio.metronome.setTempo(this.tempo);
+                if (!this.hasStartedMetronome) audio.metronome.setTempo(this.tempo);
                 audio.metronome.start();
                 this.base = performance.now();
-                hasStartedMetronome = true;
+                this.hasStartedMetronome = true;
             } else if (!this.playMetronome && this.playing) {
                 audio.metronome.stop();
             }
@@ -87,7 +89,7 @@ function main() {
 
             if (this.playMetronome && this.tempo) {
                 audio.metronome.stop();
-                hasStartedMetronome = false;
+                this.hasStartedMetronome = false;
             }
 
             for (let track of this.tracks)
@@ -142,7 +144,7 @@ function main() {
             if (this.playMetronome && this.tempo) {
                 audio.metronome.setTempo(this.tempo);
                 audio.metronome.start();
-                hasStartedMetronome = true;
+                this.hasStartedMetronome = true;
             }
 
             for (let track of this.tracks)
@@ -207,7 +209,7 @@ function main() {
                 track.length = track.units * base;
 
                 audio.stop(index, source => {
-                    track.audio = source;
+                    Vue.set(track, "audio", source);
                     track.audio.mediaElement.currentTime += 0.01;
 
                     if (immediate) {
@@ -237,6 +239,17 @@ function main() {
                 track.audio.mute();
             else
                 track.audio.unmute();
+        },
+        download: function() {
+            let zip = new JSZip();
+            let n = this.tracks.length
+            for (let i = 0; i < n; i++) {
+                zip.file(`track-${i+1}.opus`, this.tracks[i].audio.blob);
+            }
+
+            zip.generateAsync({type: "base64"}).then(data => {
+                location.href = "data:application/zip;base64," + data;
+            });
         },
     }
     });
