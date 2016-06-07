@@ -7,6 +7,8 @@
 "use strict";
 
 function main() {
+    const r_delay = 85;
+
     window.vm = new Vue({
     el: "main",
 
@@ -34,14 +36,9 @@ function main() {
 
             let firstTrack = this.tracks[0];
 
-            if (this.tempo) {
+            if (this.tempo && (!firstTrack || !firstTrack.end)) {
                 let quantization = (60 / this.tempo) * 1000;  // nearest beat
                 let difference = performance.now() - this.base; 
-
-                if (firstTrack && firstTrack.end) {
-                    let beatsPerTrack = firstTrack.length / quantization;
-                    quantization *= Math.round(beatsPerTrack);
-                }
 
                 let frac = (difference / quantization) % 1; // frac part
                 let time = quantization * (1 - frac); // ms until next point
@@ -103,7 +100,7 @@ function main() {
             for (let track of this.tracks) {
                 if (!track.end) continue;
                 track.time = 0;
-                track.audio.restart();
+                track.audio.restart(r_delay);
             }
 
             let i = 0;
@@ -129,15 +126,13 @@ function main() {
                             track.time = 0;
                         } else {
                             track.time = track.length = performance.now() - track.start;
-                            track.delay = (this.currentTime - track.time) % unitLength;
                         }
                     } else { // cursor synced
                         if (newUnit) {
                             track.currentUnit++;
                             if (track.currentUnit >= track.units) {
                                 track.currentUnit = 0;
-                                console.log(track.delay);
-                                track.audio.restart(-track.delay / 1000);
+                                track.audio.restart(r_delay);
                             }
                         }
                         track.time = track.currentUnit * unitLength + this.currentTime;
@@ -166,7 +161,6 @@ function main() {
                 currentUnit: 0,
                 units: 1,
                 muted: false,
-                delay: 0,
             }) - 1;
 
             let delay = this.getRecordDelay(index);
@@ -183,11 +177,11 @@ function main() {
 
                 let currentTime;
                 if (this.tracks[0].end)
-                    currentTime = this.tracks[0].audio.mediaElement.currentTime;
+                    currentTime = this.tracks[0].audio.mediaElement.currentTime * 1000;
                 else
                     currentTime = 0;
 
-                audio.record(track.start, this.currentTime);
+                audio.record(track.start, currentTime);
 
                 if (oneUnitOnly && this.quantize && this.tracks[0].end) {
                     setTimeout(this.stop.bind(this), this.tracks[0].length / 2); 
@@ -209,18 +203,17 @@ function main() {
 
                 track.end = performance.now() + delay;
                 track.length = track.end - track.start;
-                let l1 = track.length;
 
                 let base = this.tracks[0].length;
                 track.units = track.length / base;
                 if (this.quantize) track.units = Math.round(track.units);
                 track.length = track.units * base;
-                let l2 = track.length;
 
                 audio.stop(track.end, source => {
                     Vue.set(track, "audio", source);
-
-                    console.log(`l1: ${l1}\tl2:${l2}`);
+                    source.restart(r_delay);
+                    track.time = 0;
+                    track.currentUnit = 0;
 
                     if (immediate) {
                         this.quantize = false;
@@ -233,9 +226,9 @@ function main() {
         getRecordDelay(index) {
             if (index === 0) {
                 if (this.tempo)
-                    return 1.5;
+                    return -0.3;
                 else
-                    return 10;
+                    return 10.0;
             } else {
                 if (this.quantize)
                     return 0.3;

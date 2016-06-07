@@ -102,14 +102,20 @@ window.audio = (function() {
             audio.muted = false;
         };
         source.restart = function(time = 0) {
-            audio.currentTime = time;
-            audio.play();
+            if (time >= 0) {
+                audio.currentTime = time / 1000;
+                audio.play();
+            } else {
+                setTimeout(function() {
+                    audio.currentTime = 0;
+                    audio.play();
+                }, -time);
+            }
         };
         
 
         source.blob = blob;
         source.connect(context.destination);
-        source.unmute();
         source.restart();
 
         callback(source); 
