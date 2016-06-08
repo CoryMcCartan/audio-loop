@@ -1,9 +1,14 @@
 {
     "short_name": "Looper",
     "name": "Audio Looper",
+    "start_url": "/",
     "lang": "en-US",
     "display": "standalone",
-    "icons": [ ],
+    "icons": [{
+        "src": "assets/icon.png",
+        "sizes": "144x144",
+        "type": "image/png"
+    }],
     "background_color": "#8BC34A",
     "theme_color": "#8BC34A"
 }

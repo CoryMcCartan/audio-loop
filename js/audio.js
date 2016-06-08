@@ -1,5 +1,3 @@
-// METRONOME
-
 "use strict";
 
 window.audio = (function() {
@@ -116,7 +114,6 @@ window.audio = (function() {
 
         source.blob = blob;
         source.connect(context.destination);
-        source.restart();
 
         callback(source); 
     };
