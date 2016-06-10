@@ -31,12 +31,11 @@ function main() {
     methods: {
         nextQuantization(callback) {
             if (!this.quantize || !this.base) {
-                setTimeout(callback.bind(this), 0);
-                return audio.time();
+                callback.call(this, audio.time());
+                return;
             }
 
             let firstTrack = this.tracks[0];
-            const early = 50;
 
             if (this.tempo && (!firstTrack || !firstTrack.end)) {
                 let quantization = 60 / this.tempo;  // nearest beat
@@ -45,24 +44,16 @@ function main() {
                 let frac = (difference / quantization) % 1; // frac part
                 let time = quantization * (1 - frac); // ms until next point
 
-                new Tock({
-                    countdown: true,
-                    complete: callback,
-                }).start(1000 * time - early);
-
-                return audio.time() + time;
+                setTimeout(callback.bind(this, audio.time() + time), 1000*time);
             } else {
                 if (!firstTrack || !firstTrack.end) {
-                    setTimeout(callback.bind(this), 0);
-                    return audio.time();
+                    callback.call(this, audio.time());
+                    return;
                 }
 
                 let difference = firstTrack.length - firstTrack.audio.getTime();
-                new Tock({ countdown: true,
-                    complete: callback,
-                }).start(1000 * difference - early);
 
-                return audio.time() + difference;
+                setTimeout(callback.bind(this, audio.time() + difference), 1000*difference);
             }
         },
         trackWidth(length) {
@@ -97,14 +88,14 @@ function main() {
 
             for (let track of this.tracks) {
                 if (!track.muted) track.audio.mute();
-                console.log(track.audio.getTime());
             }
         },
         play() {
             this.playing = true; 
             let startTime = audio.time();
 
-            if (!this.base) this.base = startTime;
+            //if (!this.base) 
+                this.base = startTime;
             if (this.playMetronome) this.base += 0.001; // 1ms delay on met
 
             for (let track of this.tracks) {
@@ -159,7 +150,7 @@ function main() {
             }) - 1;
             setTimeout(componentHandler.upgradeDom, 0);
 
-            let now = this.nextQuantization(() => {
+            this.nextQuantization(now => {
                 this.recording = true;
                 if (!this.playing) this.play();
 
@@ -180,7 +171,7 @@ function main() {
             this.hasPressedStop = true;
             this.hasPressedRecord = false;
 
-            let now = this.nextQuantization(() => { 
+            this.nextQuantization(now => { 
                 this.hasPressedStop = false;
                 this.recording = false;
                 
@@ -190,13 +181,11 @@ function main() {
                 track.end = now;
                 track.length = track.end - track.start;
 
+                console.log(track.length - this.tracks[0].length);
+
                 audio.stop(now, source => {
                     Vue.set(track, "audio", source);
                     track.time = audio.time() - track.end;
-
-                    if (immediate) {
-                        //this.record();
-                    }
                 });
 
                 if (immediate) {
@@ -210,7 +199,7 @@ function main() {
             if (this.playing) return;
             if (!this.tempo) this.playMetronome = true;
             this.tempo = tempoFinder.tap();
-            this.base = audio.time(); 
+            //this.base = audio.time(); 
             console.log(this.tempo);
 
             this.tapColor = true;
