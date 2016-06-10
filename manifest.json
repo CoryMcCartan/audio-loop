@@ -1,7 +1,7 @@
 {
     "short_name": "Looper",
     "name": "Audio Looper",
-    "start_url": "/",
+    "start_url": "https://corymccartan.github.io/audio-loop/",
     "lang": "en-US",
     "display": "standalone",
     "icons": [{

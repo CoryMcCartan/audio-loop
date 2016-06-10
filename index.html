@@ -25,7 +25,7 @@
                     <span class="track-id">{{ 1 + $index }}</span>
                     <span class="controls">
                         <label class="mdl-tooltip" for="mute-track-{{$index}}">
-                            Mute Track {{ $index < 10 ? '(' + ($index + 1)+ ')' : '' }}
+                            Mute Track {{ $index < 10 ? '(' + ($index + 1) + ')' : '' }}
                         </label>
                         <button @click="muteTrack($index)" id="mute-track-{{$index}}"
                             class="mdl-button mdl-js-button mdl-button--icon">
@@ -34,7 +34,9 @@
                             </i>
                         </button>
 
-                        <label class="mdl-tooltip" for="delete-track-{{$index}}">Delete Track</label>
+                        <label class="mdl-tooltip" for="delete-track-{{$index}}">
+                            Delete Track {{ $index < 10 ? '(x ' + ($index + 1) + ')' : '' }}
+                        </label>
                         <button @click="deleteTrack($index)" id="delete-track-{{$index}}"
                             class="mdl-button mdl-js-button mdl-button--icon">
                             <i class="material-icons">delete</i>

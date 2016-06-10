@@ -36,6 +36,7 @@ function main() {
             }
 
             let firstTrack = this.tracks[0];
+            const early = 50;
 
             if (this.tempo && (!firstTrack || !firstTrack.end)) {
                 let quantization = 60 / this.tempo;  // nearest beat
@@ -47,7 +48,7 @@ function main() {
                 new Tock({
                     countdown: true,
                     complete: callback,
-                }).start(1000 * time);
+                }).start(1000 * time - early);
 
                 return audio.time() + time;
             } else {
@@ -56,10 +57,10 @@ function main() {
                     return audio.time();
                 }
 
-                let difference = firstTrack.length - firstTrack.time;
+                let difference = firstTrack.length - firstTrack.audio.getTime();
                 new Tock({ countdown: true,
                     complete: callback,
-                }).start(1000 * difference);
+                }).start(1000 * difference - early);
 
                 return audio.time() + difference;
             }
@@ -70,7 +71,7 @@ function main() {
             return 100 * length / this.maxTime + "%";   
         },
         deleteTrack(index) {
-            if (!this.tracks[index].muted) this.tracks[index].audio.mute();
+            if (this.tracks[index].audio) this.tracks[index].audio.destroy();
             this.tracks.splice(index, 1);
             if (this.tracks.length === 0) this.pause();
         },
@@ -94,20 +95,22 @@ function main() {
                 this.hasStartedMetronome = false;
             }
 
-            for (let track of this.tracks)
+            for (let track of this.tracks) {
                 if (!track.muted) track.audio.mute();
+                console.log(track.audio.getTime());
+            }
         },
         play() {
             this.playing = true; 
             let startTime = audio.time();
 
             if (!this.base) this.base = startTime;
-            if (this.playMetronome) this.base += 1; // 1ms delay on met
+            if (this.playMetronome) this.base += 0.001; // 1ms delay on met
 
             for (let track of this.tracks) {
                 if (!track.end) continue;
                 track.time = 0;
-                track.audio.restart(0);
+                track.audio.restart(track.audio.extraTime);
             }
 
             let i = 0;
@@ -125,7 +128,10 @@ function main() {
                         else
                             track.time = track.length = audio.time() - track.start;
                     } else { // cursor synced
-                        if (!track.audio) continue;
+                        if (!track.audio) {
+                            track.time = 0;
+                            continue;
+                        }
                         track.time = track.audio.getTime();
                     }
                 }
@@ -149,9 +155,9 @@ function main() {
                 start: 0,
                 length: 0,
                 time: 0,
-                units: 1,
                 muted: false,
             }) - 1;
+            setTimeout(componentHandler.upgradeDom, 0);
 
             let now = this.nextQuantization(() => {
                 this.recording = true;
@@ -177,30 +183,27 @@ function main() {
             let now = this.nextQuantization(() => { 
                 this.hasPressedStop = false;
                 this.recording = false;
-
+                
                 let index = this.tracks.length - 1;
                 let track = this.tracks[index];
 
                 track.end = now;
                 track.length = track.end - track.start;
-                console.log('l1: ' + track.length);
 
-                let base = this.tracks[0].length;
-                track.units = track.length / base;
-                if (this.quantize) track.units = Math.round(track.units);
-                console.log(base);
-                track.length = track.units * base; console.log('l3: ' + track.length);
-
-                audio.stop(track.start + track.length, source => {
+                audio.stop(now, source => {
                     Vue.set(track, "audio", source);
                     track.time = audio.time() - track.end;
 
                     if (immediate) {
-                        this.quantize = false;
-                        this.record();
-                        this.quantize = true;
+                        //this.record();
                     }
                 });
+
+                if (immediate) {
+                    this.quantize = false;
+                    this.record();
+                    this.quantize = true;
+                }
             });
         },
         tap() {
@@ -245,7 +248,7 @@ function main() {
     });
 
     Mousetrap.bind("space", () => vm.recording ? vm.stop() : vm.record());
-    Mousetrap.bind("shift+space", () => vm.recording ? vm.stop(true) : vm.record(true));
+    Mousetrap.bind("shift+space", () => vm.recording ? vm.stop() : vm.record(true));
     Mousetrap.bind("p", () => vm.playing ? vm.pause() : vm.play());
     Mousetrap.bind("t", vm.tap);
     Mousetrap.bind("d", () => vm.delay = (vm.delay + 1) % 5);
@@ -264,6 +267,7 @@ function main() {
     .then(audio.initRecord())
     .then(() => {
         $("main").style.opacity = 1.0;
+        screen.keepAwake = true;
     });
 }
 

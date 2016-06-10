@@ -13,7 +13,7 @@ window.audio = (function() {
     let micSource;
     let recorder;
     let dummy;
-    let bufferSize = 8192;
+    let bufferSize = 16384;//8192;
     let data = [];
     let times = [];
     let recording = false;
@@ -53,8 +53,7 @@ window.audio = (function() {
     let startMetronome = function() {
         metGain.gain.value = metVolume;
     };
-    let stopMetronome = function() {
-        metGain.gain.value = 0.0;
+    let stopMetronome = function() { metGain.gain.value = 0.0;
     };
 
     let time = () => context.currentTime;
@@ -85,28 +84,27 @@ window.audio = (function() {
             arr[ch] = data;
         }
 
+        let offset = bufferSize / sampleRate;
+
         if (callFinish) {
             data.push(arr);
-            times.push(context.currentTime);
+            times.push(context.currentTime - offset);
             callFinish = false;
             finish();
         }
 
         if (recording) {
             data.push(arr);
-            times.push(context.currentTime);
+            times.push(context.currentTime - offset);
         } else {
             data = [arr];
-            times = [context.currentTime];
+            times = [context.currentTime - offset];
         }
     };
 
     let record = function(start) {
         startTime = start;
         recording = true;
-    };
-    let onstart = function() {
-        console.log('record delay: ' + (performance.now() - startTime).toFixed(3));
     };
 
     let stop = function(stop, _callback) {
@@ -130,6 +128,8 @@ window.audio = (function() {
         let stopBuffer = (stopFrame / bufferSize)|0;
         let stopIndex = stopFrame % bufferSize;
 
+        console.log(startBuffer);
+
         for (let ch = 0; ch < channels; ch++) {
             let offset = 0;
 
@@ -142,6 +142,7 @@ window.audio = (function() {
                 offset += bufferSize;
             }
 
+            if (stopBuffer >= data.length) continue;
             if (stopIndex === 0) continue; // no more data to copy
             let stopData = data[stopBuffer][ch].slice(0, stopIndex);
             buffer.copyToChannel(stopData, ch, offset);
@@ -151,7 +152,7 @@ window.audio = (function() {
         let source = context.createBufferSource();
         source.buffer = buffer;
         source.loop = true;
-        let sourceStartTime = context.currentTime;
+        let sourceStartTime = startTime;
 
         let muter = context.createGain();
         muter.connect(context.destination);
@@ -173,8 +174,8 @@ window.audio = (function() {
             source.buffer = buffer;
             source.loop = true;
             source.connect(muter);
-            source.start(time);
             sourceStartTime = context.currentTime;
+            source.start(sourceStartTime, time);
         };
         source.export = function() {
             return new Promise((resolve, reject) => {
@@ -207,14 +208,16 @@ window.audio = (function() {
         };
 
         source.unmute();
-        let time = context.currentTime - stopTime;
-        if (time < 0) time = 0;
-        source.start(time); // adjust for delay
-        console.log('l2: ' + length);
+        let start = context.currentTime; 
+        source.extraDelay = vm.tracks.length > 1 ? 0.08 : 0.00;
+        let time = start - stopTime + source.extraDelay;
+        if (time < 0) {
+            time = 0;
+            start += -time;
+        }
+        source.start(start, time); // adjust for delay
 
-        setTimeout(function() {
-           callback(source); 
-        }, 0);
+        callback(source); 
     };
 
     return {
