@@ -110,7 +110,7 @@ function main() {
             for (let track of this.tracks) {
                 if (!track.end) continue;
                 track.time = 0;
-                track.audio.restart(track.audio.extraTime);
+                track.audio.restart(track.audio.extraDelay);
             }
 
             let i = 0;

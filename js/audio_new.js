@@ -210,7 +210,8 @@ window.audio = (function() {
         source.unmute();
         let start = context.currentTime; 
         source.extraDelay = vm.tracks.length > 1 ? 0.08 : 0.00;
-        let time = start - stopTime + source.extraDelay;
+        let metAdjust = vm.playMetronome ? 0.08 : 0.0;
+        let time = start - stopTime + source.extraDelay + metAdjust;
         if (time < 0) {
             time = 0;
             start += -time;
