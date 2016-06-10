@@ -22,7 +22,7 @@ var DYNAMIC_CACHE = [
     base + "css/main.css",
     base + "js/main.js",
     base + "js/audio.js",
-    base + "js/audio_new.js",
+    base + "js/wav.js",
 ];
 var CACHE = STATIC_CACHE.concat(DYNAMIC_CACHE);
 

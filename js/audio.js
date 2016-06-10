@@ -178,30 +178,9 @@ window.audio = (function() {
             source.start(sourceStartTime, time);
         };
         source.export = function() {
-            return new Promise((resolve, reject) => {
-                var oc = new OfflineAudioContext(channels, frameCount, sampleRate);
-                let tmpSrc = oc.createBufferSource();
-                tmpSrc.buffer = buffer;
-                let dest = oc.createMediaStreamDestination();
-                let recorder = new MediaRecorder(dest.stream);
-
-                let chunks = [];
-                recorder.ondataavailable = function(e) {
-                    chunks.push(e.data);
-                };
-                recorder.onstop = function() {
-                    let blob = new Blob(chunks, {type: "audio/opus; codecs=opus"});
-                    resolve(blob);
-                };
-
-                tmpSrc.connect(dest);
-                tmpSrc.connect(oc.destination);
-                tmpSrc.start();
-                recorder.start();
-                oc.startRendering().then(function() {
-                    recorder.stop(); 
-                });
-            });
+            let wav = WAV.fromAudioBuffer(buffer);
+            let blob = new Blob([wav], {type: "audio/wav"});
+            return blob;
         };
         source.getTime = function() {
             return (context.currentTime - sourceStartTime) % length; 
@@ -209,8 +188,11 @@ window.audio = (function() {
 
         source.unmute();
         let start = context.currentTime; 
-        source.extraDelay = vm.tracks.length > 1 ? 0.06 : 0.00;
-        source.extraDelay += vm.playMetronome ? 0.06 : 0.0;
+
+        source.extraDelay = 0.06;
+        if (vm.tracks.length === 1 && !vm.playMetronome)
+            source.extraDelay = 0.00;
+
         let time = start - stopTime + source.extraDelay;
         if (time < 0) {
             time = 0;

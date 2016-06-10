@@ -181,8 +181,6 @@ function main() {
                 track.end = now;
                 track.length = track.end - track.start;
 
-                console.log(track.length - this.tracks[0].length);
-
                 audio.stop(now, source => {
                     Vue.set(track, "audio", source);
                     track.time = audio.time() - track.end;
@@ -216,21 +214,18 @@ function main() {
                 track.audio.unmute();
         },
         download() {
-            let promises = [];
+            let zip = new JSZip();
+
             let n = this.tracks.length
             for (let i = 0; i < n; i++) {
-                promises.push(this.tracks[i].audio.export());
+                zip.file(`track-${i+1}.wav`, this.tracks[i].audio.export());
             }
 
-            Promise.all(promises).then(function(blobs) {
-                let zip = new JSZip();
-                for (let i = 0; i < n; i++) {
-                    zip.file(`track-${i+1}.opus`, blobs[i]);
-                }
-
-                zip.generateAsync({type: "base64"}).then(data => {
-                    location.href = "data:application/zip;base64," + data;
-                });
+            zip.generateAsync({type: "base64"}).then(data => {
+                let link = document.createElement("a");
+                link.href = "data:application/zip;base64," + data;
+                link.download = "tracks.zip";
+                link.click();
             });
         },
     }

@@ -108,6 +108,7 @@
             <label class="mdl-tooltip mdl-tooltip--top" for="metronome">Play Metronome (m)</label>
             <button id="metronome"
                 @click="toggleMetronome()"
+                :disabled="!this.tempo"
                 :class="playMetronome ? 'mdl-button--colored' : ''"
                 class="mdl-button mdl-js-button mdl-button--fab mdl-button--mini-fab">
                 <i class="material-icons">audiotrack</i>
@@ -129,7 +130,7 @@
     <script src="https://corymccartan.github.io/jslib/lib.min.js"></script>
     <script src="js/jszip.min.js" type="text/javascript" charset="utf-8"></script>
     <script src="js/mousetrap.min.js" type="text/javascript" charset="utf-8"></script>
-    <script src="js/recorder.min.js" type="text/javascript" charset="utf-8"></script>
+    <script src="js/wav.js" type="text/javascript" charset="utf-8"></script>
     <script src="js/audio.js" type="text/javascript" charset="utf-8"></script>
     <script src="js/main.js" type="text/javascript" charset="utf-8"></script>
 </body>
