@@ -252,7 +252,7 @@ function main() {
 
             let reader = new FileReader();
             reader.onload = e => {
-                this.processScript(e.target.result);
+                this.processScript(e.target.result.replace(/\(.+\)/g, ""));
             };
             reader.readAsText(f);
         },

@@ -26,7 +26,7 @@ tempo "a tempo ('60 bpm')"
 	= tempo:number msp "bpm"i { return tempo; }
 
 instructions "an instruction"
-    = "\n"+ instr:(record / mute / wait / metronome / end) { return instr; }
+    = "\n"+ instr:(record / mute / wait / metronome / end) msp? { return instr; }
 
 record
 	= "record"i sp n:number sp bars {

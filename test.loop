@@ -1,7 +1,8 @@
-4/4 at 72 BPM
+4/4 at 172 BPM
 metronome on
 wait 2 bars
-record 1 bar
+record 1 bar (Track 1)
 wait 1 bar
 metronome off
-record 4 bars
+record 2 bars (Track 2)
+end
