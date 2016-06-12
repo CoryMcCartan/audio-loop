@@ -51,6 +51,7 @@ main
     border-radius: 2px
     background-color: white
     height: calc(100% + 1.4em)
+    transition: opacity 200ms ease-out,
 
 .loop-track
     width: 100%
@@ -96,6 +97,15 @@ main
         .bar.muted
             background-color: $grey
 
+.meter
+    position: absolute
+    right: 0
+    bottom: 0
+    width: 4px
+    border-radius: 1px 1px 0 0
+    transition: height 80ms
+    background-color: $main-500
+
 .main-controls
     display: flex
     width: 80%
@@ -114,7 +124,8 @@ main
     flex-direction: column-reverse
     align-items: center
     align-self: flex-end
-    margin: 1em auto
+    margin: 0 -0.5em 1em -1em
+    padding: 0 2em
 .fab-container .mdl-button--fab
     margin-top: 0.75em
     position: relative
@@ -129,6 +140,12 @@ main
     opacity: 1
     transform: scale(1)
     top: 0
+.fab-container:hover .mdl-button--fab:nth-of-type(3)
+    transition-delay: 50ms
+.fab-container:hover .mdl-button--fab:nth-of-type(4)
+    transition-delay: 100ms
+.fab-container:hover .mdl-button--fab:nth-of-type(5)
+    transition-delay: 150ms
 
 #overlay
     position: fixed
@@ -147,6 +164,9 @@ main
 
 .text-button
     font-size: 80%
+
+a
+    outline: none
 
 h4.mdl-dialog__title
     font-size: 2rem

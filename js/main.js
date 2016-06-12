@@ -11,22 +11,37 @@ function main() {
     el: "main",
 
     data: {
-        quantize: true,
-        playMetronome: false,
-        maxTime: 20.0,
+        app: {
+            name: "Looping",
+            version: "1.0.0",
+        },
+
+        maxTime: 10.0,
         playing: false,
-        recording: false,
+        base: null,
         delay: 0,
         currentTime: 0,
-        base: null,
+
         tempo: null,
+        playMetronome: false,
         tapColor: false,
         hasStartedMetronome: false,
+
+        quantize: true,
+        recording: false,
         hasPressedRecord: false,
         hasPressedStop: false,
-        script: false,
         tracks: [],
+
+        script: false,
+
+        trebleGain: 0,
+        bassGain: 0,
+
         alertText: "",
+        alertDialog: $("dialog#alert"),
+        aboutDialog: $("dialog#about"),
+        eqDialog: $("dialog#eq"),
     },
 
     methods: {
@@ -58,8 +73,10 @@ function main() {
             }
         },
         trackWidth(length) {
-            if (length > this.maxTime) 
-                this.maxTime = 1.25 * length;
+            if (length > this.maxTime) {
+                this.maxTime = 1.5 * length;
+                dispatchEvent(trackLengthChange);
+            }
             return 100 * length / this.maxTime + "%";   
         },
         deleteTrack(index) {
@@ -80,16 +97,14 @@ function main() {
         },
         pause() {
             this.playing = false; 
-            if (this.recording) this.stop();
+            if (this.recording) this.stop(true);
 
             if (this.playMetronome && this.tempo) {
                 audio.metronome.stop();
                 this.hasStartedMetronome = false;
             }
 
-            for (let track of this.tracks) {
-                if (!track.muted && track.audio) track.audio.mute();
-            }
+            audio.mute(true);
 
             this.script = false;
         },
@@ -104,8 +119,10 @@ function main() {
                 this.base = startTime;
             if (this.playMetronome) this.base += 0.001; // 1ms delay on met
 
+            audio.unmute(true);
+
             for (let track of this.tracks) {
-                if (!track.end) continue;
+                if (!track.audio) continue;
                 track.time = 0;
                 track.audio.restart(track.audio.extraDelay);
             }
@@ -140,9 +157,6 @@ function main() {
                 audio.metronome.start();
                 this.hasStartedMetronome = true;
             }
-
-            for (let track of this.tracks)
-                if (!track.muted && track.audio) track.audio.unmute();
         },
         record(oneUnitOnly) {
             if (this.hasPressedRecord) return;
@@ -172,7 +186,7 @@ function main() {
                 }
             });
         },
-        stop(immediate) {
+        stop(mute = false) {
             if (this.hasPressedStop) return;
             this.hasPressedStop = true;
             this.hasPressedRecord = false;
@@ -181,7 +195,7 @@ function main() {
                 this.hasPressedStop = false;
                 this.recording = false;
                 
-                let index = this.tracks.length - 1;
+                let index = this.tracks.findIndex(t => !t.end);
                 let track = this.tracks[index];
 
                 track.end = now;
@@ -190,18 +204,16 @@ function main() {
                 audio.stop(now, source => {
                     Vue.set(track, "audio", source);
                     track.time = audio.time() - track.end;
-                });
 
-                if (immediate) {
-                    this.quantize = false;
-                    this.record();
-                    this.quantize = true;
-                }
+                    if (mute)
+                        track.audio.mute();
+
+                    drawWaveform(source, index);
+                });
             });
         },
         tap() {
             if (this.playing) return;
-            if (!this.tempo) this.playMetronome = true;
             this.tempo = tempoFinder.tap();
 
             this.tapColor = true;
@@ -218,9 +230,10 @@ function main() {
                 track.audio.unmute();
         },
         download() {
-            let zip = new JSZip();
+            let n = this.tracks.length;
+            if (n === 0) return;
 
-            let n = this.tracks.length
+            let zip = new JSZip();
             for (let i = 0; i < n; i++) {
                 zip.file(`track-${i+1}.wav`, this.tracks[i].audio.export());
             }
@@ -278,12 +291,9 @@ function main() {
         },
         runScript() {
             let offset = 0;
-            let hasRecorded = false;
             let measureLength = this.script.beatsPerMeasure * 60 / this.tempo;
 
             for (let command of this.script.commands) {
-                console.log(offset);
-                
                 switch (command.type) {
                     case "metronome":
                         setTimeout(() => {
@@ -295,17 +305,16 @@ function main() {
                         offset += measureLength * command.n;
                         break;
                     case "record":
-                        let early = 100;
+                        let early = 60;
                         setTimeout(this.record, 1000*offset - early);
                         offset += measureLength * command.n;
-                        setTimeout(this.stop, 1000*offset - early);
-                        hasRecorded = true;
+                        setTimeout(this.stop, 1000*offset - 2*early);
                         break;
                     case "mute":
                         setTimeout(this.muteTrack.bind(this, command.track), 1000*offset);
                         break;
                     case "end":
-                        setTimeout(this.pause, 1000*offset);
+                        setTimeout(this.pause, 1000*offset + 50);
                         break;
                 }
             }
@@ -315,16 +324,29 @@ function main() {
             this.tempo = false;
             this.playMetronome = false;
         },
-        alertClose() {
-            $("dialog#alert").close();
-        },
         showAlert(text) {
             this.alertText = text;   
             $("dialog#alert").showModal();
         },
+        changeTreble() {
+            audio.setTreble(this.trebleGain);
+        },
+        changeBass() {
+            audio.setBass(this.bassGain);
+        },
+        resetEQ() {
+            this.trebleGain = 0;
+            $$(".mdl-slider")[0].MaterialSlider.change(0);
+            audio.setTreble(0);
+
+            this.bassGain = 0;
+            $$(".mdl-slider")[1].MaterialSlider.change(0);
+            audio.setBass(0);
+        }
     }
     });
 
+    // KEYBOARD SHORTCUTS
     Mousetrap.bind("space", () => vm.recording ? vm.stop() : vm.record());
     Mousetrap.bind("shift+space", () => vm.recording ? vm.stop() : vm.record(true));
     Mousetrap.bind("p", () => vm.playing ? vm.pause() : vm.play());
@@ -341,8 +363,8 @@ function main() {
         });
     }
 
+    // DRAG AND DROP
     let overlay = $("#overlay");
-    let body = $("body");
     let lastTarget;
 
     window.ondragover = e => e.preventDefault();
@@ -372,12 +394,21 @@ function main() {
         });
     };
 
-    audio.initMet()
-    .then(audio.initRecord())
+    audio.metronome.initialize()
+    .then(audio.initialize())
     .then(() => {
+        let meter = $(".meter");
+        let monitorMeter = function() {
+            meter.style.height = (Math.sqrt(audio.getMeter()) * innerHeight) + "px"; 
+            requestAnimationFrame(monitorMeter);
+        };
+        requestAnimationFrame(monitorMeter);
+
         $("main").style.opacity = 1.0;
         screen.keepAwake = true;
     });
+
+    window.trackLengthChange = new Event("tracklengthchange");
 }
 
 if (navigator.serviceWorker) {
@@ -386,4 +417,55 @@ if (navigator.serviceWorker) {
     }).then(() => {
         console.log("Service Worker Registered.");
     })
+}
+
+function drawWaveform(source, index) {
+    let el = $$(".bar")[index];
+    let bounds = el.getBoundingClientRect();
+
+    let length = source.buffer.length;
+    let raw = source.buffer.getChannelData(0);
+    const step = 250;
+    let data = new Float32Array(length / step);
+    let getBigger = (a, b) => Math.abs(a) > Math.abs(b) ? a : b;
+    for (let i = 0; i < length; i += step) {
+        data[i/step] = getBigger(raw[i], raw[i + 50]);
+    }
+
+    let x = d3.scale.linear()
+        .domain([0, length / step])
+        .range([0, bounds.width]);
+    let y = d3.scale.linear()
+        .domain([-1, 1])
+        .range([0, bounds.height]);
+
+    let waveform = d3.svg.line()
+        .x((d, i) => x(i))
+        .y(y);
+
+    let graph = d3.select(el).append("svg")
+        .attr("width", bounds.width)
+        .attr("height", bounds.height);
+
+    graph.append("path")
+        .datum(data)
+        .attr("d", waveform)
+        .attr("stroke", "black")
+        .attr("opacity", 0.3)
+        .attr("stroke-width", 1);
+
+    let adjust = function() {
+        let bounds = el.getBoundingClientRect();
+
+        x.range([0, bounds.width]);
+        y.range([0, bounds.height]);
+
+        graph.select("path")
+            .attr("d", waveform);
+    };
+
+    window.addEventListener("resize", adjust);
+    window.addEventListener("tracklengthchange", () => {
+        setTimeout(adjust, 60);
+    });
 }

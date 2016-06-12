@@ -10,10 +10,35 @@ window.audio = (function() {
     metGain.connect(context.destination);
     let metVolume = 0.4;
 
+    let globalGain = context.createGain();
+    globalGain.connect(context.destination);
+
+    let trebleEQ = context.createBiquadFilter();
+    trebleEQ.type = "highshelf";
+    trebleEQ.frequency.value = 2000; // Hz
+    let bassEQ = context.createBiquadFilter();
+    bassEQ.type = "lowshelf";
+    bassEQ.frequency.value = 200; // Hz
+    trebleEQ.connect(bassEQ);
+    bassEQ.connect(globalGain);
+
+    let setTreble = g => trebleEQ.gain.value = g;
+    let setBass = g => bassEQ.gain.value = g;
+
+    let compressor = context.createDynamicsCompressor();
+    compressor.threshold.value = -20; // db
+    compressor.attack.value = 0.020; // s
+    compressor.release.value = 0.200; // s
+    compressor.ratio.value = 20.0; //
+    compressor.knee.value = 5.0; // db
+    compressor.connect(trebleEQ);
+
+
     let micSource;
     let recorder;
     let dummy;
-    let bufferSize = 8192;//16384;//8192;
+    let bufferSize = 8192;
+    let meter = 0;
     let data = [];
     let times = [];
     let recording = false;
@@ -53,16 +78,42 @@ window.audio = (function() {
     let startMetronome = function() {
         metGain.gain.value = metVolume;
     };
-    let stopMetronome = function() { metGain.gain.value = 0.0;
+    let stopMetronome = function() { 
+        metGain.gain.value = 0.0;
     };
 
+
     let time = () => context.currentTime;
+
+    let mute = function(fade = false) {
+        let time = fade ? 0.75 : 0.0;
+        globalGain.gain.cancelScheduledValues(0);
+        if (fade) {
+            globalGain.gain.setValueAtTime(1.0, 0);
+            globalGain.gain.exponentialRampToValueAtTime(0.001, time);
+            globalGain.gain.setValueAtTime(0.0, time);
+        } else {
+            globalGain.gain.value = 0.0;
+        }
+    };
+    let unmute = function(fade = false) {
+        let time = fade ? 0.25 : 0.0;
+        globalGain.gain.cancelScheduledValues(0);
+        if (fade) {
+            globalGain.gain.setValueAtTime(0.001, 0);
+            globalGain.gain.exponentialRampToValueAtTime(1.0, time);
+        } else {
+            globalGain.gain.value = 1.0;
+        }
+    };
+
 
     let initRecord = function() {
         return new Promise((resolve, reject) => {
             navigator.mediaDevices.getUserMedia({audio: true}).then(stream => {
                 micSource = context.createMediaStreamSource(stream);
                 dummy = context.createMediaStreamDestination();
+                
                 let ch = micSource.channelCount;
                 recorder = context.createScriptProcessor(bufferSize, ch, ch);
                 recorder.onaudioprocess = saveData;
@@ -81,6 +132,14 @@ window.audio = (function() {
         for (let ch = 0; ch < channels; ch++) {
             let data = new Float32Array(bufferSize);
             e.inputBuffer.copyFromChannel(data, ch);
+
+            let avgValue = 0;
+            const step = 500;
+            for (let i = 0; i < bufferSize; i += step) {
+                avgValue += Math.abs(data[i]);
+            }
+            meter = avgValue / (bufferSize / step);
+            
             arr[ch] = data;
         }
 
@@ -101,6 +160,8 @@ window.audio = (function() {
             times = [context.currentTime - offset];
         }
     };
+
+    let getMeter = () => meter;
 
     let record = function(start) {
         startTime = start;
@@ -155,17 +216,17 @@ window.audio = (function() {
         let sourceStartTime = startTime;
 
         let muter = context.createGain();
-        muter.connect(context.destination);
+        muter.connect(compressor);
         source.connect(muter);
 
         source.mute = function() {
-            muter.gain.value = 0.0;
+                muter.gain.value = 0.0;
         };
         source.unmute = function() {
-            muter.gain.value = 1.0;
+                muter.gain.value = 1.0;
         };
         source.destroy = function() {
-            muter.disconnect(context.destination);
+            muter.disconnect(compressor);
             source.disconnect(muter);
         };
         source.restart = function(time) {
@@ -189,7 +250,7 @@ window.audio = (function() {
         source.unmute();
         let start = context.currentTime; 
 
-        source.extraDelay = 0.06;
+        source.extraDelay = 0.07;
         if (vm.tracks.length === 1 && !vm.playMetronome)
             source.extraDelay = 0.00;
 
@@ -204,16 +265,21 @@ window.audio = (function() {
     };
 
     return {
-        initMet,
-        initRecord,
+        initialize: initRecord,
         record,
         stop,
         time,
+        getMeter,
         metronome: {
+            initialize: initMet,
             setTempo,
             start: startMetronome,
             stop: stopMetronome,
         },
+        setTreble,
+        setBass,
+        mute,
+        unmute,
     };
 })();
 
