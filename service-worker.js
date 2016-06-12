@@ -9,7 +9,7 @@ var base = location.pathname.replace("service-worker.js", "");
 var STATIC_CACHE = [
     base + "assets/met.wav",
     base + "js/mousetrap.min.js",
-    base + "js/tock.js",
+    base + "js/jszip.min.js",
     "https://fonts.googleapis.com/icon?family=Material+Icons",
     "https://fonts.googleapis.com/css?family=Roboto:400,500,700,300",
 //    "https://code.getmdl.io/1.1.3/material.green-indigo.min.css",
@@ -22,6 +22,7 @@ var DYNAMIC_CACHE = [
     base + "css/main.css",
     base + "js/main.js",
     base + "js/audio.js",
+    base + "js/parser.js",
     base + "js/wav.js",
 ];
 var CACHE = STATIC_CACHE.concat(DYNAMIC_CACHE);

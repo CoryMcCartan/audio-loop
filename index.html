@@ -114,16 +114,43 @@
                 <i class="material-icons">audiotrack</i>
             </button>
 
-            <label class="mdl-tooltip mdl-tooltip--top" for="download">Download</label>
-            <button id="download"
-                @click="download()"
-                :disabled="!this.tracks.length"
-                class="mdl-button mdl-js-button mdl-button--fab mdl-button--mini-fab">
-                <i class="material-icons">file_download</i>
-            </button>
+            <div class="fab-container">
+                <label class="mdl-tooltip mdl-tooltip--top" for="download">Download</label>
+                <button id="download"
+                    @click="download()"
+                    :disabled="!this.tracks.length"
+                    class="main-fab mdl-button mdl-js-button mdl-button--fab mdl-button--mini-fab">
+                    <i class="material-icons">file_download</i>
+                </button>
+
+                <label v-show="!script" class="mdl-tooltip mdl-tooltip--top" for="script">Add Script</label>
+                <button id="script"
+                    @click="chooseFile()"
+                    v-show="!script"
+                    class="mdl-button mdl-js-button mdl-button--fab mdl-button--mini-fab">
+                    <i class="material-icons">file_upload</i>
+                </button>
+
+                <label v-show="script" class="mdl-tooltip mdl-tooltip--top" for="clear-script">Clear Script</label>
+                <button id="clear-script"
+                    @click="clearScript()"
+                    v-show="script"
+                    class="mdl-button mdl-js-button mdl-button--fab mdl-button--mini-fab">
+                    <i class="material-icons">clear</i>
+                </button>
+            </div>
 
         </section>
+
+        <dialog class="mdl-dialog" id="alert">
+            <div class="mdl-dialog__content">{{ alertText }}</div>
+            <div class="mdl-dialog__actions">
+                <button type="button" class="mdl-button" @click="alertClose">OK</button>
+            </div>
+        </dialog>
     </main>
+
+    <div id="overlay"></div>
 
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/1.0.24/vue.min.js"></script>
@@ -131,6 +158,7 @@
     <script src="js/jszip.min.js" type="text/javascript" charset="utf-8"></script>
     <script src="js/mousetrap.min.js" type="text/javascript" charset="utf-8"></script>
     <script src="js/wav.js" type="text/javascript" charset="utf-8"></script>
+    <script src="js/parser.js" type="text/javascript" charset="utf-8"></script>
     <script src="js/audio.js" type="text/javascript" charset="utf-8"></script>
     <script src="js/main.js" type="text/javascript" charset="utf-8"></script>
 </body>

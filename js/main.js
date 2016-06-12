@@ -24,8 +24,9 @@ function main() {
         hasStartedMetronome: false,
         hasPressedRecord: false,
         hasPressedStop: false,
-
+        script: false,
         tracks: [],
+        alertText: "",
     },
 
     methods: {
@@ -87,12 +88,17 @@ function main() {
             }
 
             for (let track of this.tracks) {
-                if (!track.muted) track.audio.mute();
+                if (!track.muted && track.audio) track.audio.mute();
             }
+
+            this.script = false;
         },
         play() {
             this.playing = true; 
             let startTime = audio.time();
+
+            if (this.script) 
+                this.runScript();
 
             //if (!this.base) 
                 this.base = startTime;
@@ -129,7 +135,7 @@ function main() {
             }
             requestAnimationFrame(updateTime);
 
-            if (this.playMetronome && this.tempo) {
+            if (!this.script && this.playMetronome && this.tempo) {
                 audio.metronome.setTempo(this.tempo);
                 audio.metronome.start();
                 this.hasStartedMetronome = true;
@@ -197,11 +203,9 @@ function main() {
             if (this.playing) return;
             if (!this.tempo) this.playMetronome = true;
             this.tempo = tempoFinder.tap();
-            //this.base = audio.time(); 
-            console.log(this.tempo);
 
             this.tapColor = true;
-            setTimeout(() => this.tapColor = false, 100);
+            setTimeout(() => this.tapColor = false, 150);
         },
         muteTrack(index) {
             if (this.tracks.length <= index) return;
@@ -228,6 +232,96 @@ function main() {
                 link.click();
             });
         },
+        chooseFile() {
+            let fileInput = document.createElement("input");
+            fileInput.type = "file";
+            fileInput.accept = ".loop";
+            fileInput.onchange = this.loadScript;
+            fileInput.click();
+        },
+        loadScript(evt) {
+            let f = evt.target.files[0];
+            if (!f) {
+                this.showAlert("Error loading file.  Please try again.");
+                return;
+            }
+            if (f.name.split(".").pop() !== "loop") { // must be a .loop file
+                this.showAlert("Need .loop file.");
+                return; 
+            }
+
+            let reader = new FileReader();
+            reader.onload = e => {
+                this.processScript(e.target.result);
+            };
+            reader.readAsText(f);
+        },
+        processScript(text) {
+            let parsed;
+            try {
+                parsed = scriptParser.parse(text);
+            } catch (e) {
+                this.showAlert(e);
+                return;
+            }
+
+            let beatsPerMeasure = parsed.timeSignature[0];
+            if (parsed.timeSignature[1] === 8)
+                beatsPerMeasure /= 3;
+
+            this.tempo = parsed.tempo;
+            this.playMetronome = false;
+            this.script = {
+                commands: parsed.instructions,
+                beatsPerMeasure,
+            };
+        },
+        runScript() {
+            let offset = 0;
+            let hasRecorded = false;
+            let measureLength = this.script.beatsPerMeasure * 60 / this.tempo;
+
+            for (let command of this.script.commands) {
+                console.log(offset);
+                
+                switch (command.type) {
+                    case "metronome":
+                        setTimeout(() => {
+                            if (this.playMetronome !== command.status)
+                                this.toggleMetronome();
+                        }, 1000*offset);
+                        break;
+                    case "wait":
+                        offset += measureLength * command.n;
+                        break;
+                    case "record":
+                        let early = 100;
+                        setTimeout(this.record, 1000*offset - early);
+                        offset += measureLength * command.n;
+                        setTimeout(this.stop, 1000*offset - early);
+                        hasRecorded = true;
+                        break;
+                    case "mute":
+                        setTimeout(this.muteTrack.bind(this, command.track), 1000*offset);
+                        break;
+                    case "end":
+                        setTimeout(this.pause, 1000*offset);
+                        break;
+                }
+            }
+        },
+        clearScript() {
+            this.pause();
+            this.tempo = false;
+            this.playMetronome = false;
+        },
+        alertClose() {
+            $("dialog#alert").close();
+        },
+        showAlert(text) {
+            this.alertText = text;   
+            $("dialog#alert").showModal();
+        },
     }
     });
 
@@ -246,6 +340,37 @@ function main() {
             vm.nextQuantization(vm.muteTrack.bind(vm, i));
         });
     }
+
+    let overlay = $("#overlay");
+    let body = $("body");
+    let lastTarget;
+
+    window.ondragover = e => e.preventDefault();
+
+    window.ondragenter = e => {
+        e.preventDefault();
+        lastTarget = e.target;
+        overlay.style.visibility = "visible";
+        overlay.style.opacity = 0.35;
+    };
+
+    window.ondragleave = e => {
+        e.preventDefault();
+        if (e.target !== lastTarget) return;
+        overlay.style.visibility = "hidden";
+        overlay.style.opacity = 0.0;
+    };
+
+    window.ondrop = e => {
+        e.preventDefault();
+
+        overlay.style.visibility = "hidden";
+        overlay.style.opacity = 0.0;
+
+        vm.loadScript({
+            target: e.dataTransfer,
+        });
+    };
 
     audio.initMet()
     .then(audio.initRecord())

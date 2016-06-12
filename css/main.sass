@@ -100,11 +100,46 @@ main
     display: flex
     width: 80%
     margin: 0 10%
+    height: 72px
     position: absolute
     bottom: 1em
+    align-items: center
 
     button
         color: $offwhite
+
+
+.fab-container
+    display: flex
+    flex-direction: column-reverse
+    align-items: center
+    align-self: flex-end
+    margin: 1em auto
+.fab-container .mdl-button--fab
+    margin-top: 0.75em
+    position: relative
+    z-index: 5
+.fab-container .mdl-button--fab:not(.main-fab)
+    opacity: 0
+    transition: all 250ms
+    top: 0.5em
+    transform: scale(0.8)
+    z-index: 4
+.fab-container:hover .mdl-button--fab:not(.main-fab)
+    opacity: 1
+    transform: scale(1)
+    top: 0
+
+#overlay
+    position: fixed
+    top: 0
+    left: 0
+    width: 100vw
+    height: 100vh
+    background-color: white
+    transition: all 200ms
+    visibility: hidden
+    z-index: 100000000
 
 
 .spacer
@@ -115,3 +150,4 @@ main
 
 h4.mdl-dialog__title
     font-size: 2rem
+
