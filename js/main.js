@@ -44,6 +44,11 @@ function main() {
         eqDialog: $("dialog#eq"),
     },
 
+    watch: {
+        trebleGain: audio.setTreble,
+        bassGain: audio.setBass,
+    },
+
     methods: {
         nextQuantization(callback) {
             if (!this.quantize || !this.base) {
@@ -328,12 +333,6 @@ function main() {
             this.alertText = text;   
             $("dialog#alert").showModal();
         },
-        changeTreble() {
-            audio.setTreble(this.trebleGain);
-        },
-        changeBass() {
-            audio.setBass(this.bassGain);
-        },
         resetEQ() {
             this.trebleGain = 0;
             $$(".mdl-slider")[0].MaterialSlider.change(0);
@@ -343,7 +342,7 @@ function main() {
             $$(".mdl-slider")[1].MaterialSlider.change(0);
             audio.setBass(0);
         }
-    }
+    },
     });
 
     // KEYBOARD SHORTCUTS

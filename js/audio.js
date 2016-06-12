@@ -86,22 +86,19 @@ window.audio = (function() {
     let time = () => context.currentTime;
 
     let mute = function(fade = false) {
-        let time = fade ? 0.75 : 0.0;
         globalGain.gain.cancelScheduledValues(0);
+
         if (fade) {
-            globalGain.gain.setValueAtTime(1.0, 0);
-            globalGain.gain.exponentialRampToValueAtTime(0.001, time);
-            globalGain.gain.setValueAtTime(0.0, time);
+            globalGain.gain.setTargetAtTime(0.0, context.currentTime, 0.15);
         } else {
             globalGain.gain.value = 0.0;
         }
     };
     let unmute = function(fade = false) {
-        let time = fade ? 0.25 : 0.0;
         globalGain.gain.cancelScheduledValues(0);
+
         if (fade) {
-            globalGain.gain.setValueAtTime(0.001, 0);
-            globalGain.gain.exponentialRampToValueAtTime(1.0, time);
+            globalGain.gain.setTargetAtTime(1.0, context.currentTime, 0.04);
         } else {
             globalGain.gain.value = 1.0;
         }
