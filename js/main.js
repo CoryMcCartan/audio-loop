@@ -399,7 +399,7 @@ function main() {
     .then(() => {
         let meter = $(".meter");
         let monitorMeter = function() {
-            meter.style.height = (Math.sqrt(audio.getMeter()) * innerHeight) + "px"; 
+            meter.style.height = (Math.sqrt(audio.getMeter()) * 100) + "vh"; 
             requestAnimationFrame(monitorMeter);
         };
         requestAnimationFrame(monitorMeter);
