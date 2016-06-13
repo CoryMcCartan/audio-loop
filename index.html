@@ -129,19 +129,19 @@
                     <i class="material-icons">assignment</i>
                 </button>
 
+                <label v-show="script" class="mdl-tooltip mdl-tooltip--right" for="clear-script">Clear Script</label>
+                <button id="clear-script"
+                    @click="clearScript()"
+                    v-show="script"
+                    class="main-fab mdl-button mdl-js-button mdl-button--fab mdl-button--mini-fab">
+                    <i class="material-icons">clear</i>
+                </button>
+
                 <label class="mdl-tooltip mdl-tooltip--right" for="download">Download</label>
                 <button id="download"
                     @click="download()"
                     class="mdl-button mdl-js-button mdl-button--fab mdl-button--mini-fab">
                     <i class="material-icons">file_download</i>
-                </button>
-
-                <label v-show="script" class="mdl-tooltip mdl-tooltip--right" for="clear-script">Clear Script</label>
-                <button id="clear-script"
-                    @click="clearScript()"
-                    v-show="script"
-                    class="mdl-button mdl-js-button mdl-button--fab mdl-button--mini-fab">
-                    <i class="material-icons">clear</i>
                 </button>
 
                 <label class="mdl-tooltip mdl-tooltip--right" for="show-eq">Equalizer</label>
