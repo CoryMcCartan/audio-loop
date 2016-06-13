@@ -9,7 +9,7 @@
 
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,500,700,300">
-    <link rel="stylesheet" href="https://code.getmdl.io/1.1.3/material.green-blue.min.css">
+    <link rel="stylesheet" href="https://code.getmdl.io/1.1.3/material.green-amber.min.css">
     <script defer src="https://code.getmdl.io/1.1.3/material.min.js"></script>
     <link rel="stylesheet" type="text/css" href="css/main.css">
     <!-- ANALYTICS -->
@@ -109,7 +109,7 @@
             <button id="record"
                 @click="recording ? stop() : record()"
                 :disabled="script"
-                :class="script ? 'mdl-color--amber-600' : 'mdl-button--colored'"
+                :class="script ? '' : 'mdl-color--amber-600'"
                 class="mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect">
                 <i class="material-icons">
                     {{ recording ? 'stop' : 'fiber_manual_record' }}</i>
