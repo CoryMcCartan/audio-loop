@@ -316,7 +316,7 @@ function main() {
                         setTimeout(this.stop, 1000*offset - 2*early);
                         break;
                     case "mute":
-                        setTimeout(this.muteTrack.bind(this, command.track), 1000*offset);
+                        setTimeout(this.muteTrack.bind(this, command.track - 1), 1000*offset);
                         break;
                     case "end":
                         setTimeout(this.pause, 1000*offset + 50);
