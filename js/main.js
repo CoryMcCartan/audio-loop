@@ -7,6 +7,9 @@
 "use strict";
 
 function main() {
+    const key_TREBLE = "looping-treble";
+    const key_BASS = "looping-bass";
+
     window.vm = new Vue({
     el: "main",
 
@@ -35,8 +38,8 @@ function main() {
 
         script: false,
 
-        trebleGain: 0,
-        bassGain: 0,
+        trebleGain: +localStorage[key_TREBLE] || 0,
+        bassGain: +localStorage[key_BASS] || 0,
 
         alertText: "",
         alertDialog: $("dialog#alert"),
@@ -45,8 +48,14 @@ function main() {
     },
 
     watch: {
-        trebleGain: audio.setTreble,
-        bassGain: audio.setBass,
+        trebleGain: v => {
+            audio.setTreble(v);  
+            localStorage[key_TREBLE] = v;
+        },
+        bassGain: v => {
+            audio.setBass(v);  
+            localStorage[key_BASS] = v;
+        },
     },
 
     methods: {
