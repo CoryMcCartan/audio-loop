@@ -163,6 +163,10 @@ window.audio = (function() {
     let record = function(start) {
         startTime = start;
         recording = true;
+
+        metGain.gain.value /= 2;
+        globalGain.gain.cancelScheduledValues(0);
+        globalGain.gain.value = 0.3;
     };
 
     let stop = function(stop, _callback) {
@@ -170,6 +174,10 @@ window.audio = (function() {
         callFinish = true;
         stopTime = stop;
         callback = _callback;
+        
+        metGain.gain.value *= 2;
+        globalGain.gain.cancelScheduledValues(0);
+        globalGain.gain.value = 1.0;
     }; 
     let finish = function() {
         let length = stopTime - startTime;

@@ -261,11 +261,8 @@ function main() {
                 zip.file(`track-${i+1}.wav`, this.tracks[i].audio.export());
             }
 
-            zip.generateAsync({type: "base64"}).then(data => {
-                let link = document.createElement("a");
-                link.href = "data:application/zip;base64," + data;
-                link.download = "tracks.zip";
-                link.click();
+            zip.generateAsync({type: "blob"}).then(blob => {
+                download(blob, "tracks.zip", "application/zip");
             });
         },
         chooseFile() {
