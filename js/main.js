@@ -306,6 +306,8 @@ function main() {
         runScript() {
             let offset = 0;
             let measureLength = this.script.beatsPerMeasure * 60 / this.tempo;
+            let quantize = this.quantize;
+            this.quantize = true;
 
             for (let command of this.script.commands) {
                 switch (command.type) {
@@ -334,7 +336,8 @@ function main() {
             }
 
             setTimeout(() => {
-               this.script = ""; 
+               this.script = null; 
+            this.quantize = quantize;
             }, offset);
         },
         clearScript() {

@@ -89,7 +89,7 @@ window.audio = (function() {
         globalGain.gain.cancelScheduledValues(0);
 
         if (fade) {
-            globalGain.gain.setTargetAtTime(0.0, context.currentTime, 0.15);
+            globalGain.gain.setTargetAtTime(0.0, context.currentTime, 0.10);
         } else {
             globalGain.gain.value = 0.0;
         }
@@ -217,10 +217,10 @@ window.audio = (function() {
         source.connect(muter);
 
         source.mute = function() {
-                muter.gain.value = 0.0;
+            muter.gain.value = 0.0;
         };
         source.unmute = function() {
-                muter.gain.value = 1.0;
+            muter.gain.value = 1.0;
         };
         source.destroy = function() {
             muter.disconnect(compressor);
