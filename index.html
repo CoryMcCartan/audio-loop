@@ -121,19 +121,19 @@
             </button>
 
             <div class="fab-container">
-                <label class="mdl-tooltip mdl-tooltip--right" for="download">Download</label>
-                <button id="download"
-                    @click="download()"
-                    class="main-fab mdl-button mdl-js-button mdl-button--fab mdl-button--mini-fab">
-                    <i class="material-icons">file_download</i>
-                </button>
-
                 <label v-show="!script" class="mdl-tooltip mdl-tooltip--right" for="script">Add Script</label>
                 <button id="script"
                     @click="chooseFile()"
                     v-show="!script"
-                    class="mdl-button mdl-js-button mdl-button--fab mdl-button--mini-fab">
+                    class="main-fab mdl-button mdl-js-button mdl-button--fab mdl-button--mini-fab">
                     <i class="material-icons">assignment</i>
+                </button>
+
+                <label class="mdl-tooltip mdl-tooltip--right" for="download">Download</label>
+                <button id="download"
+                    @click="download()"
+                    class="mdl-button mdl-js-button mdl-button--fab mdl-button--mini-fab">
+                    <i class="material-icons">file_download</i>
                 </button>
 
                 <label v-show="script" class="mdl-tooltip mdl-tooltip--right" for="clear-script">Clear Script</label>
@@ -144,7 +144,7 @@
                     <i class="material-icons">clear</i>
                 </button>
 
-                <label class="mdl-tooltip mdl-tooltip--right" for="show-eq">EQ</label>
+                <label class="mdl-tooltip mdl-tooltip--right" for="show-eq">Equalizer</label>
                 <button id="show-eq"
                     @click="eqDialog.showModal()"
                     class="mdl-button mdl-js-button mdl-button--fab mdl-button--mini-fab">
@@ -169,7 +169,7 @@
         </dialog>
 
         <dialog class="mdl-dialog" id="eq">
-            <h4 class="mdl-dialog__title">EQ</h4>
+            <h4 class="mdl-dialog__title">Equalizer</h4>
             <div class="mdl-dialog__content">
                 <form>
                     Treble ({{ trebleGain }} db) <input class="mdl-slider mdl-js-slider" type="range" 
@@ -190,7 +190,7 @@
         </dialog>
 
         <dialog class="mdl-dialog" id="about">
-            <h4 class="mdl-dialog__title">About</h4>
+            <h4 class="mdl-dialog__title">About {{ app.name }}</h4>
             <div class="mdl-dialog__content">
                 <img width="64" src="assets/icon.png"> <br /><br />
                 <b>{{ app.name }}</b> <br />
