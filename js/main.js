@@ -323,6 +323,10 @@ function main() {
                         break;
                 }
             }
+
+            setTimeout(() => {
+               this.script = ""; 
+            }, offset);
         },
         clearScript() {
             this.pause();
