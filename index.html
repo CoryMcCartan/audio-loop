@@ -109,7 +109,8 @@
             <button id="record"
                 @click="recording ? stop() : record()"
                 :disabled="script"
-                class="mdl-button mdl-js-button mdl-button--fab mdl-color--amber-600 mdl-js-ripple-effect">
+                :class="script ? 'mdl-color--amber-600' : 'mdl-button--colored'"
+                class="mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect">
                 <i class="material-icons">
                     {{ recording ? 'stop' : 'fiber_manual_record' }}</i>
             </button>
