@@ -15,7 +15,7 @@ function main() {
 
     data: {
         app: {
-            name: "Looping",
+            name: "Verdi",
             version: "1.0.0",
         },
 
