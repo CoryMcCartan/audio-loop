@@ -463,6 +463,9 @@ function drawWaveform(source, index) {
         x.range([0, bounds.width]);
         y.range([0, bounds.height]);
 
+        graph.attr("width", bounds.width);
+        graph.attr("height", bounds.height);
+
         graph.select("path")
             .attr("d", waveform);
     };
