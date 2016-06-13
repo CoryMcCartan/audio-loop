@@ -3,13 +3,11 @@
 
 $font-stack: 'Roboto', 'Helvetica Nueue', sans-serif
 
-$main-300: #AED581
-$main-500: #8BC34A
-$main-700: #689F38
-$lightgrey: #888
-$darkgrey: #333
+$main: #7CB342
+$lightgrey: #757575
+$darkgrey: #2f2f2f
 $offwhite: #eee
-$grey: #666
+$grey: #616161
 
 @mixin shadow($radius, $opacity)
     box-shadow: 0 0 $radius rgba(0, 0, 0, $opacity)
@@ -90,21 +88,24 @@ main
         flex-grow: 1
 
         .bar
-            transition: background-color 100ms
-            background-color: $main-500
+            transition: background-color 200ms
+            background-color: $main
             border-radius: 0 4px 4px 0
 
         .bar.muted
             background-color: $grey
 
+        .bar.recording
+            background-color: #FDD835
+
 .meter
     position: absolute
     right: 0
     bottom: 0
-    width: 4px
     border-radius: 1px 1px 0 0
+    width: 4px
     transition: height 80ms
-    background-color: $main-500
+    background-color: $main
 
 .main-controls
     display: flex
@@ -124,7 +125,7 @@ main
     flex-direction: column-reverse
     align-items: center
     align-self: flex-end
-    margin: 0 auto 1em 0
+    margin: 0 auto 1em 2.5%
     padding: 0 1.5em
 .fab-container .mdl-button--fab
     margin-top: 0.75em

@@ -55,8 +55,10 @@
                     </span>
                 </div>
                 <div class="track">
-                    <div class="bar" :class="track.muted ? 'muted' : ''"
-                        :style="{width: trackWidth(track.length)}"></div>
+                    <div class="bar" :class="[
+                         track.muted ? 'muted' : '',
+                         recording && tracks.length === $index + 1 ? 'mdl-color--amber' : '',
+                         ]" :style="{width: trackWidth(track.length)}"></div>
                     <div class="cursor" :style="{
                             left: trackWidth(track.time),
                             opacity: this.playing ? 1.0: 0.0,
@@ -107,7 +109,7 @@
             <button id="record"
                 @click="recording ? stop() : record()"
                 :disabled="script"
-                class="mdl-button mdl-js-button mdl-button--fab mdl-button--colored mdl-js-ripple-effect">
+                class="mdl-button mdl-js-button mdl-button--fab mdl-color--amber-600 mdl-js-ripple-effect">
                 <i class="material-icons">
                     {{ recording ? 'stop' : 'fiber_manual_record' }}</i>
             </button>
@@ -182,17 +184,15 @@
         <dialog class="mdl-dialog" id="eq">
             <h4 class="mdl-dialog__title">Equalizer</h4>
             <div class="mdl-dialog__content">
-                <form>
-                    Treble ({{ trebleGain }} db) <input class="mdl-slider mdl-js-slider" type="range" 
-                        min="-20" max="20" step="0.1" value="0" v-model="trebleGain">
-                    <br />
-                    Bass ({{ bassGain }} db)
-                    <input class="mdl-slider mdl-js-slider" type="range"
-                        min="-20" max="20" step="0.1" value="0" v-model="bassGain">
-                </form>
+                Treble ({{ trebleGain }} db) <input class="mdl-slider mdl-js-slider" type="range" 
+                    min="-20" max="20" step="0.1" v-model="trebleGain">
+                <br />
+                Bass ({{ bassGain }} db)
+                <input class="mdl-slider mdl-js-slider" type="range"
+                    min="-20" max="20" step="0.1" v-model="bassGain">
             </div>
             <div class="mdl-dialog__actions">
-                <button type="button" class="mdl-button" 
+                <button type="button" class="mdl-button" autofocus
                     @click="eqDialog.close()">OK</button>
                 <button type="button" class="mdl-button mdl-button--primary" 
                     @click="resetEQ()" 

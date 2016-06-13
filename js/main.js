@@ -7,8 +7,14 @@
 "use strict";
 
 function main() {
-    const key_TREBLE = "looping-treble";
-    const key_BASS = "looping-bass";
+    const key_TREBLE = "verdi-treble";
+    const key_BASS = "verdi-bass";
+    const key_QUANTIZE = "verdi-quantize";
+
+    let trebleGain = +localStorage[key_TREBLE] || 0;
+    let bassGain = +localStorage[key_BASS] || 0;
+    let quantize = key_QUANTIZE in localStorage ? 
+        localStorage[key_QUANTIZE] === "true" : true;
 
     window.vm = new Vue({
     el: "main",
@@ -30,7 +36,7 @@ function main() {
         tapColor: false,
         hasStartedMetronome: false,
 
-        quantize: true,
+        quantize,
         recording: false,
         hasPressedRecord: false,
         hasPressedStop: false,
@@ -38,8 +44,8 @@ function main() {
 
         script: false,
 
-        trebleGain: +localStorage[key_TREBLE] || 0,
-        bassGain: +localStorage[key_BASS] || 0,
+        trebleGain,
+        bassGain,
 
         alertText: "",
         alertDialog: $("dialog#alert"),
@@ -48,13 +54,16 @@ function main() {
     },
 
     watch: {
-        trebleGain: v => {
+        trebleGain(v) {
             audio.setTreble(v);  
             localStorage[key_TREBLE] = v;
         },
-        bassGain: v => {
+        bassGain(v) {
             audio.setBass(v);  
             localStorage[key_BASS] = v;
+        },
+        quantize(v) {
+            localStorage[key_QUANTIZE] = v;
         },
     },
 
@@ -88,7 +97,7 @@ function main() {
         },
         trackWidth(length) {
             if (length > this.maxTime) {
-                this.maxTime = 1.5 * length;
+                this.maxTime = 1.4 * length;
                 dispatchEvent(trackLengthChange);
             }
             return 100 * length / this.maxTime + "%";   
