@@ -21,7 +21,7 @@ var STATIC_CACHE = [
 var DYNAMIC_CACHE = [
     base,
     base + "index.html",
-    //base + "manifest.json",
+    base + "manifest.json",
     base + "css/main.css",
     base + "js/main.js",
     base + "js/audio.js",
