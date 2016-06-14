@@ -35,6 +35,26 @@ main
     min-height: 90vh
     width: calc(100vw - 2em)
 
+.notes
+    position: absolute
+    right: 1em
+    top: 1em
+    bottom: 7em
+    overflow: hidden
+    left: 60vw
+    width: calc(40vw - 1em)
+    background-color: transparent
+    resize: none
+    color: white
+    border: none
+    opacity: 0.6
+    z-index: 5
+    white-space: pre
+    text-align: right
+    font-size: 1.5em
+    font-family: 'Courier', monospace
+    outline: none
+
 .tracks
     display: flex
     width: 100%
@@ -113,6 +133,7 @@ main
     margin: 0 10%
     height: 72px
     position: absolute
+    z-index: 10
     bottom: 1em
     align-items: center
 
@@ -125,8 +146,8 @@ main
     flex-direction: column-reverse
     align-items: center
     align-self: flex-end
-    margin: 0 auto 1em 2.5%
-    padding: 0 1.5em
+    margin: 0 auto 1em 2%
+    padding: 0 1.25em
 .fab-container .mdl-button--fab
     margin-top: 0.75em
     position: relative

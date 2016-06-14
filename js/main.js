@@ -43,6 +43,7 @@ function main() {
         tracks: [],
 
         script: false,
+        scriptText: "",
 
         trebleGain,
         bassGain,
@@ -285,11 +286,14 @@ function main() {
 
             let reader = new FileReader();
             reader.onload = e => {
-                this.processScript(e.target.result.replace(/\(.+\)/g, ""));
+                this.scriptText = e.target.result.replace(/\(.+\)/g, "");
+                this.processScript();
             };
             reader.readAsText(f);
         },
-        processScript(text) {
+        processScript(text = this.scriptText) {
+            if (text.trim() === "") return;
+
             let parsed;
             try {
                 parsed = scriptParser.parse(text);

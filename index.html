@@ -67,6 +67,9 @@
             </div>
         </section>
 
+        <textarea class="notes" v-model="scriptText" lazy 
+            @change="processScript()" @blur="processScript()"></textarea>
+
         <div class="meter"></div>
 
         <section class="main-controls">
