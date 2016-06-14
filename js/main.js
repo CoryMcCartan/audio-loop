@@ -286,13 +286,14 @@ function main() {
 
             let reader = new FileReader();
             reader.onload = e => {
-                this.scriptText = e.target.result.replace(/\(.+\)/g, "");
+                this.scriptText = e.target.result;
                 this.processScript();
             };
             reader.readAsText(f);
         },
         processScript(text = this.scriptText) {
-            if (text.trim() === "") return;
+            text = text.trim().replace(/\(.+\)/g, "");            
+            if (text === "") return;
 
             let parsed;
             try {
