@@ -194,6 +194,9 @@ function main() {
             }) - 1;
             setTimeout(componentHandler.upgradeDom, 0);
 
+            if (index >= 5)  // redraw waveforms
+                dispatchEvent(trackLengthChange);
+
             this.nextQuantization(now => {
                 this.recording = true;
                 if (!this.playing) this.play();

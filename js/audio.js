@@ -256,8 +256,12 @@ window.audio = (function() {
         let start = context.currentTime; 
 
         source.extraDelay = 0.07;
-        if (vm.tracks.length === 1 && !vm.playMetronome)
-            source.extraDelay = 0.00;
+        if (vm.tracks.length === 1) {
+            source.extraDelay -= 0.01;
+
+            if (!vm.playMetronome)
+                source.extraDelay = 0.00;
+        }
 
         let time = start - stopTime + source.extraDelay;
         if (time < 0) {
