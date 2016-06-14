@@ -1,6 +1,6 @@
 {
-    "short_name": "Looper",
-    "name": "Audio Looper",
+    "short_name": "Verdi",
+    "name": "Verdi Audio Looper",
     "start_url": "https://corymccartan.github.io/audio-loop/",
     "lang": "en-US",
     "display": "standalone",
