@@ -292,7 +292,7 @@ function main() {
             reader.readAsText(f);
         },
         processScript(text = this.scriptText) {
-            text = text.trim().replace(/\(.+\)/g, "");            
+            text = text.trim().replace(/\([^\)]+\)/g, "");            
             if (text === "") return;
 
             let parsed;
