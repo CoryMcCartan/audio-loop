@@ -446,12 +446,14 @@ function drawWaveform(source, index) {
 
     let length = source.buffer.length;
     let raw = source.buffer.getChannelData(0);
-    const step = 250;
+    const step = 200;
     let data = new Float32Array(length / step);
-    let getBigger = (a, b) => Math.abs(a) > Math.abs(b) ? a : b;
     for (let i = 0; i < length; i += step) {
-        data[i/step] = getBigger(raw[i], raw[i + 50]);
+        data[i/step] = Math.abs(Math.max(raw[i], raw[i+50], raw[i+100], raw[i+150]));
     }
+    // norm
+    data[0] = 0;
+    data[data.length - 1] = 0;
 
     let x = d3.scale.linear()
         .domain([0, length / step])
@@ -460,9 +462,13 @@ function drawWaveform(source, index) {
         .domain([-1, 1])
         .range([0, bounds.height]);
 
-    let waveform = d3.svg.line()
+    let waveform_top = d3.svg.line()
         .x((d, i) => x(i))
         .y(y);
+
+    let waveform_bottom = d3.svg.line()
+        .x((d, i) => x(i))
+        .y(d => y(-d));
 
     let graph = d3.select(el).append("svg")
         .attr("width", bounds.width)
@@ -470,7 +476,16 @@ function drawWaveform(source, index) {
 
     graph.append("path")
         .datum(data)
-        .attr("d", waveform)
+        .attr("class", "top")
+        .attr("d", waveform_top)
+        .attr("stroke", "black")
+        .attr("opacity", 0.3)
+        .attr("stroke-width", 1);
+
+    graph.append("path")
+        .datum(data)
+        .attr("class", "bottom")
+        .attr("d", waveform_bottom)
         .attr("stroke", "black")
         .attr("opacity", 0.3)
         .attr("stroke-width", 1);
@@ -484,8 +499,10 @@ function drawWaveform(source, index) {
         graph.attr("width", bounds.width);
         graph.attr("height", bounds.height);
 
-        graph.select("path")
-            .attr("d", waveform);
+        graph.select("path.top")
+            .attr("d", waveform_top);
+        graph.select("path.bottom")
+            .attr("d", waveform_bottom);
     };
 
     window.addEventListener("resize", adjust);
