@@ -32,7 +32,7 @@ function main() {
         currentTime: 0,
 
         tempo: null,
-        playMetronome: false,
+        playMetronome: true,
         tapColor: false,
         hasStartedMetronome: false,
 
@@ -107,6 +107,7 @@ function main() {
             if (this.tracks[index].audio) this.tracks[index].audio.destroy();
             this.tracks.splice(index, 1);
             if (this.tracks.length === 0) this.pause();
+            if (this.tracks.length >= 4) dispatchEvent(trackLengthChange);
         },
         toggleMetronome() {
             this.playMetronome = !this.playMetronome;
@@ -454,10 +455,10 @@ function drawWaveform(source, index) {
 
     let length = source.buffer.length;
     let raw = source.buffer.getChannelData(0);
-    const step = 200;
+    const step = 350;
     let data = new Float32Array(length / step);
     for (let i = 0; i < length; i += step) {
-        data[i/step] = Math.abs(Math.max(raw[i], raw[i+50], raw[i+100], raw[i+150]));
+        data[i/step] = Math.max.apply(null, raw.slice(i, i + step));
     }
     // norm
     data[0] = 0;
@@ -515,6 +516,6 @@ function drawWaveform(source, index) {
 
     window.addEventListener("resize", adjust);
     window.addEventListener("tracklengthchange", () => {
-        setTimeout(adjust, 60);
+        setTimeout(adjust, 10 + 50 * Math.random());
     });
 }

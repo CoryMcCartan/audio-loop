@@ -98,7 +98,7 @@ window.audio = (function() {
         globalGain.gain.cancelScheduledValues(0);
 
         if (fade) {
-            globalGain.gain.setTargetAtTime(1.0, context.currentTime, 0.04);
+            globalGain.gain.setTargetAtTime(1.0, context.currentTime, 0.03);
         } else {
             globalGain.gain.value = 1.0;
         }
@@ -166,7 +166,7 @@ window.audio = (function() {
 
         metGain.gain.value /= 2;
         globalGain.gain.cancelScheduledValues(0);
-        globalGain.gain.value = 0.3;
+        globalGain.gain.value = 0.5;
     };
 
     let stop = function(stop, _callback) {
@@ -193,8 +193,6 @@ window.audio = (function() {
         let stopFrame = startFrame + frameCount;
         let stopBuffer = (stopFrame / bufferSize)|0;
         let stopIndex = stopFrame % bufferSize;
-
-        console.log(startBuffer);
 
         for (let ch = 0; ch < channels; ch++) {
             let offset = 0;
@@ -255,7 +253,7 @@ window.audio = (function() {
         source.unmute();
         let start = context.currentTime; 
 
-        source.extraDelay = 0.07;
+        source.extraDelay = 0.08;
         if (vm.tracks.length === 1) {
             source.extraDelay -= 0.01;
 
