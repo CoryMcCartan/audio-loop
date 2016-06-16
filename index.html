@@ -12,17 +12,6 @@
     <link rel="stylesheet" href="https://code.getmdl.io/1.1.3/material.green-amber.min.css">
     <script defer src="https://code.getmdl.io/1.1.3/material.min.js"></script>
     <link rel="stylesheet" type="text/css" href="css/main.css">
-    <!-- ANALYTICS -->
-    <script>
-        (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-            (i[r].q=i[r].q||[]).push(arguments)
-        },i[r].l=1*new Date();a=s.createElement(o),
-        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-        })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-
-        ga('create', 'UA-79274202-1', 'auto');
-        ga('send', 'pageview');
-    </script>
 </head>
 <body>
     <header>Verdi</header>
@@ -222,15 +211,26 @@
     <div id="overlay"></div>
 
 
-    <script src="https://d3js.org/d3.v3.min.js" async charset="utf-8"></script>
+    <script src="https://d3js.org/d3.v3.min.js" async></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/1.0.24/vue.min.js"></script>
-    <script src="https://corymccartan.github.io/jslib/lib.min.js"></script>
-    <script src="js/download.js" async type="text/javascript" charset="utf-8"></script>
-    <script src="js/jszip.min.js" async type="text/javascript" charset="utf-8"></script>
-    <script src="js/mousetrap.min.js" type="text/javascript" charset="utf-8"></script>
-    <script src="js/wav.js" async type="text/javascript" charset="utf-8"></script>
-    <script src="js/parser.js" async type="text/javascript" charset="utf-8"></script>
-    <script src="js/audio.js" type="text/javascript" charset="utf-8"></script>
-    <script src="js/main.js" type="text/javascript" charset="utf-8"></script>
+    <script src="js/lib.min.js"></script>
+    <script src="js/download.min.js" async></script>
+    <script src="js/jszip.min.js" async></script>
+    <script src="js/mousetrap.min.js"></script>
+    <script src="js/wav.min.js" async></script>
+    <script src="js/parser.min.js" async></script>
+    <script src="js/audio.js"></script>
+    <script src="js/main.js"></script>
+    <!-- ANALYTICS -->
+    <script>
+        (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)
+        },i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+        ga('create', 'UA-79274202-1', 'auto');
+        ga('send', 'pageview');
+    </script>
 </body>
 </html>

@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+pegjs -e scriptParser grammar.js parser.js
+uglifyjs parser.js --screw-ie8 -o parser.min.js
+

@@ -1,7 +1,8 @@
 (function() {
     window.WAV = {};
 
-    window.WAV.fromAudioBuffer = function(buffer, opt = {}) {
+    window.WAV.fromAudioBuffer = function(buffer, opt) {
+        opt = opt || {};
         var numChannels = buffer.numberOfChannels;
         var sampleRate = buffer.sampleRate;
         var format = opt.float32 ? 3 : 1;
@@ -17,7 +18,7 @@
         return encode(result, format, sampleRate, numChannels, bitDepth);
     };
 
-    let encode = function(samples, format, sampleRate, numChannels, bitDepth) {
+    var encode = function(samples, format, sampleRate, numChannels, bitDepth) {
         var bytesPerSample = bitDepth / 8;
         var blockAlign = numChannels * bytesPerSample;
 
@@ -47,7 +48,7 @@
         return buffer;
     };
 
-    let interleave = function(inputL, inputR) {
+    var interleave = function(inputL, inputR) {
         var length = inputL.length + inputR.length;
         var result = new Float32Array(length);
 
@@ -62,21 +63,24 @@
         return result;
     };
 
-    let writeFloat32 = function(output, offset, input) {
-        for (var i = 0; i < input.length; i++, offset += 4) {
+    var writeFloat32 = function(output, offset, input) {
+        const length = input.length;
+        for (var i = 0; i < length; i++, offset += 4) {
             output.setFloat32(offset, input[i], true);
         }
     };
 
-    let floatTo16BitPCM = function(output, offset, input) {
-        for (var i = 0; i < input.length; i++, offset += 2) {
+    var floatTo16BitPCM = function(output, offset, input) {
+        const length = input.length;
+        for (var i = 0; i < length; i++, offset += 2) {
             var s = Math.max(-1, Math.min(1, input[i]));
             output.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
         }
     };
 
-    let writeString = function(view, offset, string) {
-        for (var i = 0; i < string.length; i++) {
+    var writeString = function(view, offset, string) {
+        const length = string.length;
+        for (var i = 0; i < length; i++) {
             view.setUint8(offset + i, string.charCodeAt(i));
         }
     };

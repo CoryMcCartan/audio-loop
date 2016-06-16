@@ -7,7 +7,7 @@ program
       return {
         timeSignature: info.timeSignature, 
         tempo: info.tempo, 
-        instructions,
+        instructions: instructions,
       }; 
     }
 
@@ -17,8 +17,8 @@ title
 pacing 
 	= timeSignature:timeSignature (sp "at"i / ",") sp tempo:tempo {
     	return {
-        	timeSignature,
-            tempo,
+            timeSignature: timeSignature,
+            tempo: tempo,
         };
     }
 
@@ -47,15 +47,15 @@ record
 	= "record"i sp n:number sp bars {
     	return {
         	type: "record",
-            n,
+            n: n,
         };
     }
 
 mute
-	= "mute"i sp "track"i sp track:number {
+	= ("mute"i / "unmute"i) sp "track"i sp track:number {
     	return {
         	type: "mute",
-            track,
+            track: track,
         };
     }
 
@@ -63,7 +63,7 @@ wait
 	= "wait"i sp n:number sp bars {
     	return {
         	type: "wait",
-            n,
+            n: n,
         };
     }
 
