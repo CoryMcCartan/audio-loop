@@ -10,6 +10,7 @@ var STATIC_CACHE = [
     base + "assets/met.wav",
     base + "js/mousetrap.min.js",
     base + "js/jszip.min.js",
+    base + "js/reverb.min.js",
     base + "js/wav.min.js",
     base + "js/download.min.js",
     base + "js/lib.min.js",

@@ -13,6 +13,17 @@ window.audio = (function() {
     let globalGain = context.createGain();
     globalGain.connect(context.destination);
 
+    let reverb = new SimpleReverb(context, {
+        seconds: 0.85,
+        decay: 3,
+    });
+    let wetGain = context.createGain();
+    let dryGain = context.createGain();
+    let setReverb = r => wetGain.gain.value = r ? 1.0 : 0.0;
+    reverb.connect(wetGain);
+    wetGain.connect(globalGain);
+    dryGain.connect(globalGain);
+
     let trebleEQ = context.createBiquadFilter();
     trebleEQ.type = "highshelf";
     trebleEQ.frequency.value = 2000; // Hz
@@ -20,10 +31,12 @@ window.audio = (function() {
     bassEQ.type = "lowshelf";
     bassEQ.frequency.value = 200; // Hz
     trebleEQ.connect(bassEQ);
-    bassEQ.connect(globalGain);
+    bassEQ.connect(reverb.input);
+    bassEQ.connect(dryGain);
 
     let setTreble = g => trebleEQ.gain.value = g;
     let setBass = g => bassEQ.gain.value = g;
+
 
     let compressor = context.createDynamicsCompressor();
     compressor.threshold.value = -20; // db
@@ -285,6 +298,7 @@ window.audio = (function() {
         },
         setTreble,
         setBass,
+        setReverb,
         mute,
         unmute,
     };

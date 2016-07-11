@@ -9,10 +9,13 @@
 function main() {
     const key_TREBLE = "verdi-treble";
     const key_BASS = "verdi-bass";
+    const key_REVERB = "verdi-reverb";
     const key_QUANTIZE = "verdi-quantize";
 
     let trebleGain = +localStorage[key_TREBLE] || 0;
     let bassGain = +localStorage[key_BASS] || 0;
+    let reverb = key_REVERB in localStorage ? 
+        localStorage[key_REVERB] === "true" : false;
     let quantize = key_QUANTIZE in localStorage ? 
         localStorage[key_QUANTIZE] === "true" : true;
 
@@ -47,6 +50,7 @@ function main() {
 
         trebleGain,
         bassGain,
+        reverb,
 
         alertText: "",
         alertDialog: $("dialog#alert"),
@@ -62,6 +66,10 @@ function main() {
         bassGain(v) {
             audio.setBass(v);  
             localStorage[key_BASS] = v;
+        },
+        reverb(v) {
+            audio.setReverb(v);
+            localStorage[key_REVERB] = v;
         },
         quantize(v) {
             localStorage[key_QUANTIZE] = v;
@@ -423,6 +431,10 @@ function main() {
             target: e.dataTransfer,
         });
     };
+
+    audio.setReverb(vm.reverb);
+    audio.setTreble(vm.bassGain);
+    audio.setBass(vm.trebleGain);
 
     audio.metronome.initialize()
     .then(audio.initialize())

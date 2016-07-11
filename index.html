@@ -150,7 +150,7 @@
                     <i class="material-icons">file_download</i>
                 </button>
 
-                <label class="mdl-tooltip mdl-tooltip--right" for="show-eq">Equalizer</label>
+                <label class="mdl-tooltip mdl-tooltip--right" for="show-eq">Sound</label>
                 <button id="show-eq"
                     @click="eqDialog.showModal()"
                     class="mdl-button mdl-js-button mdl-button--fab mdl-button--mini-fab">
@@ -175,7 +175,7 @@
         </dialog>
 
         <dialog class="mdl-dialog" id="eq">
-            <h4 class="mdl-dialog__title">Equalizer</h4>
+            <h4 class="mdl-dialog__title">Sound</h4>
             <div class="mdl-dialog__content">
                 Treble ({{ trebleGain }} db) <input class="mdl-slider mdl-js-slider" type="range" 
                     min="-20" max="20" step="0.1" v-model="trebleGain">
@@ -183,6 +183,11 @@
                 Bass ({{ bassGain }} db)
                 <input class="mdl-slider mdl-js-slider" type="range"
                     min="-20" max="20" step="0.1" v-model="bassGain">
+                <br />
+                <label class="mdl-switch mdl-js-switch" for="reverb">
+                    <input type="checkbox" v-model="reverb" id="reverb" class="mdl-switch__input">
+                    <span class="mdl-switch__label">Reverb</span>
+                </label>
             </div>
             <div class="mdl-dialog__actions">
                 <button type="button" class="mdl-button" autofocus
@@ -216,6 +221,7 @@
     <script src="js/lib.min.js"></script>
     <script src="js/download.min.js" async></script>
     <script src="js/jszip.min.js" async></script>
+    <script src="js/reverb.min.js"></script>
     <script src="js/mousetrap.min.js"></script>
     <script src="js/wav.min.js" async></script>
     <script src="js/parser.min.js" async></script>
