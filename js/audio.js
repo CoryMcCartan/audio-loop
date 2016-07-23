@@ -266,7 +266,7 @@ window.audio = (function() {
         source.unmute();
         let start = context.currentTime; 
 
-        source.extraDelay = 0.08;
+        source.extraDelay = vm.latency / 1000;
         if (vm.tracks.length === 1) {
             source.extraDelay -= 0.01;
 

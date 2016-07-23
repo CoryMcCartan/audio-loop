@@ -11,6 +11,7 @@ function main() {
     const key_BASS = "verdi-bass";
     const key_REVERB = "verdi-reverb";
     const key_QUANTIZE = "verdi-quantize";
+    const key_LATENCY = "verdi-latency";
 
     let trebleGain = +localStorage[key_TREBLE] || 0;
     let bassGain = +localStorage[key_BASS] || 0;
@@ -18,6 +19,7 @@ function main() {
         localStorage[key_REVERB] === "true" : false;
     let quantize = key_QUANTIZE in localStorage ? 
         localStorage[key_QUANTIZE] === "true" : true;
+    let latency = +localStorage[key_LATENCY] || 80;
 
     window.vm = new Vue({
     el: "main",
@@ -32,6 +34,7 @@ function main() {
         playing: false,
         base: null,
         delay: 0,
+        latency,
         currentTime: 0,
 
         tempo: null,
@@ -73,6 +76,9 @@ function main() {
         },
         quantize(v) {
             localStorage[key_QUANTIZE] = v;
+        },
+        latency(v) {
+            localStorage[key_LATENCY] = v;
         },
     },
 
@@ -380,7 +386,10 @@ function main() {
             this.bassGain = 0;
             $$(".mdl-slider")[1].MaterialSlider.change(0);
             audio.setBass(0);
-        }
+        },
+        showHelp() {
+            window.location.assign("help");         
+        },
     },
     });
 

@@ -1,8 +1,0 @@
-4/4 at 124 BPM
-metronome on
-wait 2 bars
-record 2 bars (Track 1)
-wait 2 bar
-metronome off
-record 2 bars (Track 3)
-end

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="manifest" href="manifest.json">
     <link rel="icon" href="assets/icon.png">
-    <title>VERDI</title>
+    <title>Verdi</title>
 
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,500,700,300">
@@ -163,6 +163,13 @@
                     class="mdl-button mdl-js-button mdl-button--fab mdl-button--mini-fab">
                     <i class="material-icons">info_outline</i>
                 </button>
+
+                <label class="mdl-tooltip mdl-tooltip--right" for="about">Help</label>
+                <button id="about"
+                    @click="showHelp()"
+                    class="mdl-button mdl-js-button mdl-button--fab mdl-button--mini-fab">
+                    <i class="material-icons">help_outline</i>
+                </button>
             </div>
 
         </section>
@@ -188,6 +195,11 @@
                     <input type="checkbox" v-model="reverb" id="reverb" class="mdl-switch__input">
                     <span class="mdl-switch__label">Reverb</span>
                 </label>
+                <br />
+                <br />
+                Latency ({{ latency }} ms)
+                <input class="mdl-slider mdl-js-slider" type="range"
+                    min="0" max="200" step="5" v-model="latency">
             </div>
             <div class="mdl-dialog__actions">
                 <button type="button" class="mdl-button" autofocus
